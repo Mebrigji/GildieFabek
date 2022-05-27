@@ -1,0 +1,7 @@
+name: SA-Core
+author: Saidora
+main: pl.saidora.core.Main
+version: 0.3
+
+depend:
+  - LuckPerms
