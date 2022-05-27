@@ -353,6 +353,6 @@ public class Configuration extends OkaeriConfig {
     public String COMMAND_REPAIR_ALL = "&7Pomyslnie naprawiono &d%itemsCount% &7przedmiotow.\n&8[&d%itemsList%&8]";
 
     @Comment("###")
-    public String COMMAND_GAMEMODE_INVALID_MODE = "&7Nie odnaleziono trybu gry o tej nazwie.";
+    public String COMMAND_GAMEMODE_INVALID_MODE = "&7Tryb gry &d%mode% &7nie istnieje.";
 
 }
