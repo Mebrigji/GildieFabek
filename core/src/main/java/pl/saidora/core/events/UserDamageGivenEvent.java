@@ -1,6 +1,5 @@
 package pl.saidora.core.events;
 
-import org.bukkit.entity.Entity;
 import pl.saidora.core.cache.EventCache;
 import pl.saidora.core.events.engine.CallbackEvent;
 import pl.saidora.core.model.impl.User;
@@ -8,21 +7,34 @@ import pl.saidora.core.model.impl.User;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public interface UserDamageGivenEvent extends CallbackEvent<UserDamageGivenEvent> {
+public class UserDamageGivenEvent implements CallbackEvent<UserDamageGivenEvent> {
 
-    User getUser();
+    private final User user;
+    private double damage;
 
-    double getDamage();
+    public User getUser() {
+        return user;
+    }
 
-    Entity getAttacker();
+    public double getDamage() {
+        return damage;
+    }
+
+    public void setDamage(double damage) {
+        this.damage = damage;
+    }
+
+    public UserDamageGivenEvent(User user){
+        this.user = user;
+    }
 
     @Override
-    default UserDamageGivenEvent getEvent(){
+    public UserDamageGivenEvent getEvent() {
         return this;
     }
 
     @Override
-    default Set<Consumer<UserDamageGivenEvent>> getCache(){
+    public Set<Consumer<UserDamageGivenEvent>> getCache() {
         return EventCache.USER_DAMAGE_GIVEN_EVENT;
     }
 }

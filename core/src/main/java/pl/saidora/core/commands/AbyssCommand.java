@@ -9,7 +9,6 @@ import pl.saidora.core.commands.system.ExecutorType;
 import pl.saidora.core.events.UserInventoryClickEvent;
 import pl.saidora.core.model.impl.Abyss;
 import pl.saidora.core.model.impl.CachedInventory;
-import pl.saidora.core.model.impl.InventoryHolder;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -22,7 +21,7 @@ public class AbyssCommand implements Command {
     @Override
     public void run(Executor executor) {
         String[] args = executor.getCommandArguments();
-        Main.getInstance().getUserCache().lookByName(executor.getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(executor.getName(), true).ifPresent(user -> {
             AbyssCache cache = Main.getInstance().getAbyssCache();
             if(!cache.isOpened()){
                 user.sendMessage(Main.getInstance().getConfiguration().ABYSS_CLOSED);
@@ -36,7 +35,6 @@ public class AbyssCommand implements Command {
                     if(event.getSlot() == 4*9+3){
                         page.get().getPrevious().ifPresent(abyss -> {
                             page.set(abyss);
-                            user.getInventoryHolder().flatMap(InventoryHolder::asCached).ifPresent(CachedInventory::close);
                             Consumer<UserInventoryClickEvent> clickEventConsumer = inventory.get().getEventConsumer();
                             inventory.set(new CachedInventory(user, cache.prepareInventory(abyss)));
                             inventory.get().whenClick(clickEventConsumer);
@@ -45,7 +43,6 @@ public class AbyssCommand implements Command {
                     } else if(event.getSlot() == 4*9+5){
                         page.get().getNext().ifPresent(abyss -> {
                             page.set(abyss);
-                            user.getInventoryHolder().flatMap(InventoryHolder::asCached).ifPresent(CachedInventory::close);
                             Consumer<UserInventoryClickEvent> clickEventConsumer = inventory.get().getEventConsumer();
                             inventory.set(new CachedInventory(user, cache.prepareInventory(abyss)));
                             inventory.get().whenClick(clickEventConsumer);

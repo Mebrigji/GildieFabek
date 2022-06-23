@@ -4,7 +4,7 @@ import eu.okaeri.configs.schema.GenericsDeclaration;
 import eu.okaeri.configs.serdes.DeserializationData;
 import eu.okaeri.configs.serdes.ObjectSerializer;
 import eu.okaeri.configs.serdes.SerializationData;
-import pl.saidora.core.model.ChatProvider;
+import pl.saidora.core.model.impl.ChatProvider;
 
 public class ChatProviderSerializer implements ObjectSerializer<ChatProvider> {
 

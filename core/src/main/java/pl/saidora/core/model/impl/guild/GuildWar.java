@@ -1,6 +1,6 @@
 package pl.saidora.core.model.impl.guild;
 
-public class War {
+public class GuildWar {
 
     private Guild attacker, defenders;
 

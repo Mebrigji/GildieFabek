@@ -2,6 +2,7 @@ package pl.saidora.core.model.impl;
 
 import org.bukkit.inventory.Inventory;
 import pl.saidora.core.events.UserInventoryClickEvent;
+import pl.saidora.core.factory.NewerOptional;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -44,7 +45,7 @@ public class InventoryHolder {
         this.eventConsumer = eventConsumer;
     }
 
-    public Optional<CachedInventory> asCached(){
-        return Optional.ofNullable(this instanceof CachedInventory ? (CachedInventory) this : null);
+    public NewerOptional<CachedInventory> asCached(){
+        return NewerOptional.ofNullable(this instanceof CachedInventory ? (CachedInventory) this : null);
     }
 }

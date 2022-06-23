@@ -10,7 +10,6 @@ import pl.saidora.api.model.guild.*;
 import pl.saidora.core.model.impl.User;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Guild implements Rank, Region, GuildHearth {
 
@@ -25,7 +24,7 @@ public class Guild implements Rank, Region, GuildHearth {
 
     private GuildTask guildTask;
     private GuildDeposit guildDeposit;
-    private War war;
+    private GuildWar guildWar;
     private Home home;
 
     private List<Guild> allies = new ArrayList<>();
@@ -45,7 +44,7 @@ public class Guild implements Rank, Region, GuildHearth {
     }
 
     public boolean isEnemy(Guild guild){
-        return this.war != null && guild.war != null && (this.war.getAttacker().equals(guild) || this.war.getDefenders().equals(guild));
+        return this.guildWar != null && guild.guildWar != null && (this.guildWar.getAttacker().equals(guild) || this.guildWar.getDefenders().equals(guild));
     }
 
     public int getPoints() {
@@ -349,12 +348,12 @@ public class Guild implements Rank, Region, GuildHearth {
         this.expireGuild = expireGuild;
     }
 
-    public War getWar() {
-        return war;
+    public GuildWar getWar() {
+        return guildWar;
     }
 
-    public void setWar(War war) {
-        this.war = war;
+    public void setWar(GuildWar guildWar) {
+        this.guildWar = guildWar;
     }
 
     @Override
@@ -364,7 +363,7 @@ public class Guild implements Rank, Region, GuildHearth {
                 ", name='" + name + '\'' +
                 ", guildTask=" + guildTask +
                 ", guildDeposit=" + guildDeposit +
-                ", war=" + war +
+                ", war=" + guildWar +
                 ", home=" + home +
                 ", guildHistory=" + guildHistory +
                 ", permissions=" + permissions +

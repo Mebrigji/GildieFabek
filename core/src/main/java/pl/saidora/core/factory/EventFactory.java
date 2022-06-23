@@ -1,6 +1,5 @@
 package pl.saidora.core.factory;
 
-import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,8 +13,6 @@ import pl.saidora.core.model.impl.Generator;
 import pl.saidora.core.model.impl.*;
 import pl.saidora.core.model.impl.guild.Guild;
 
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.*;
 
 public class EventFactory {
@@ -23,9 +20,11 @@ public class EventFactory {
     public void registerDefaultEvents(){
         EventCache.USER_JOIN_EVENT.add(event -> {
             User user = event.getUser();
+            user.setJoin(System.currentTimeMillis());
             Bukkit.getScheduler().runTaskLaterAsynchronously(Main.getInstance(), () -> {
                 if (user.getRequiredExp() == 0) user.setRequiredExp(50);
 
+                user.setInetSocketAddress(user.asPlayer().get().getAddress());
                 user.setOnline(true);
                 user.setUUID(event.getBukkitJoinEvent().getPlayer().getUniqueId());
                 user.setAbsent(AntiLogout::new, Actionbar::new, ScoreBoard::new, TabList::new, Teleport::new, PacketHelper::new);
@@ -38,19 +37,16 @@ public class EventFactory {
                 user.giveItem(Main.getInstance().getConfiguration().GENERATOR_ITEM);
 
                 Main.getInstance().getLeaderboardCache().get(User.class).ifPresent(userLeaderboard -> userLeaderboard.addIfAbsent(user));
-                try {
-                    URL url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + user.getUUID().toString() + "?unsigned=false");
-                    InputStreamReader streamReader = new InputStreamReader(url.openStream());
-                    user.setProperty(new JsonParser().parse(streamReader).getAsJsonObject().get("properties").getAsJsonArray().get(0).getAsJsonObject());
-                    streamReader.close();
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
             }, 10);
         });
         EventCache.USER_QUIT_EVENT.add(event -> {
+            event.getUser().setPlayer(null);
             event.getUser().setOnline(false);
+            event.getUser().setQuit(System.currentTimeMillis());
+            event.getUser().updateTimeSpend();
             event.getUser().getGuild().ifPresent(guild -> guild.setOnline(event.getUser(), false));
+            event.getUser().setLastReceiver(null);
+            event.getUser().setVanish(false);
         });
         EventCache.USER_CHAT_EVENT.add(event -> {
             User user = event.getUser();
@@ -96,34 +92,32 @@ public class EventFactory {
     }
 
     public void registerTeleportEvents(){
-
         EventCache.USER_SEND_TELEPORT_REQUEST.add(event -> {
             User target = event.getTarget();
             User user = event.getUser();
 
-            Optional<Long> optional = user.getTeleportDateExpire(user);
+            NewerOptional<Long> optional = user.getTeleportDateExpire(target);
 
             if(optional.isPresent()){
-                user.addMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_ALREADY
-                        .replace("%playerName%", target.getName())
-                        .replace("%time%", new TimeHelper(optional.get()).secondsToString()));
-                user.send();
+                user.prepareMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_ALREADY)
+                        .with("playerName", target.getName())
+                        .with("time", new TimeHelper(optional.get()).secondsToString())
+                        .send();
                 return;
             }
 
             if(user.getTeleportRequests() >= 8){
-                user.addMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_MAX_COUNT.replace("%count%", String.valueOf(user.getTeleportRequests())));
+                user.addMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_MAX_COUNT
+                        .replace("%count%", String.valueOf(user.getTeleportRequests())));
                 user.send();
                 return;
             }
 
             String time = new TimeHelper(event.getExpireDate()).secondsToString();
 
-            user.addMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_EXECUTOR.replace("%playerName%", target.getName()).replace("%time%", time));
-            user.send();
+            user.prepareMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_EXECUTOR).with("playerName", target.getName()).with("time", time).send();
+            target.prepareMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_TARGET).with("playerName", user.getName()).with("time", time).send();
 
-            target.addMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_TARGET.replace("%playerName%", user.getName()).replace("%time%", time));
-            target.send();
         });
 
         EventCache.USER_ACCEPT_TELEPORT_REQUEST.add(event -> {

@@ -3,7 +3,7 @@ package pl.saidora.core.cache;
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.annotation.Header;
 import net.luckperms.api.model.group.Group;
-import pl.saidora.core.model.ChatProvider;
+import pl.saidora.core.model.impl.ChatProvider;
 
 import java.util.Arrays;
 import java.util.List;

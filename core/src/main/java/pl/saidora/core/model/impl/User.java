@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import pl.saidora.api.functions.LambdaBypass;
 import pl.saidora.api.helpers.ColorHelper;
@@ -19,6 +20,7 @@ import pl.saidora.core.builder.MessageBuilder;
 import pl.saidora.core.configuration.Configuration;
 import pl.saidora.core.events.UserAcceptTeleportRequestEvent;
 import pl.saidora.core.events.UserSendTeleportRequestEvent;
+import pl.saidora.core.factory.NewerOptional;
 import pl.saidora.core.handlers.TeleportHandler;
 import pl.saidora.core.helpers.ChatTransformer;
 import pl.saidora.core.helpers.InventoryHelper;
@@ -28,9 +30,11 @@ import pl.saidora.core.model.Sender;
 import pl.saidora.core.model.impl.guild.Guild;
 
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -38,6 +42,8 @@ public class User implements Rank, Sender, Options {
 
     private final String name;
     private UUID uuid;
+    private InetSocketAddress inetSocketAddress;
+
     private JsonObject property;
 
     private int points = 200;
@@ -47,7 +53,9 @@ public class User implements Rank, Sender, Options {
     private int level = 1;
 
     private long exp, requiredExp;
-    private List<String> messages = new ArrayList<>();
+    private final List<String> messages = new ArrayList<>();
+
+    private double money;
 
     private Player player;
 
@@ -59,20 +67,73 @@ public class User implements Rank, Sender, Options {
     private Actionbar actionbar;
     private InventoryHolder inventoryHolder;
     private AntiLogout antiLogout;
-    private boolean online, incognito;
+    private boolean online, incognito, vanish;
 
-    private long teleportDelay, turboDrop, turboExp, chatDelay;
+    private long teleportDelay, turboDrop, turboExp, chatDelay, join, quit, timeSpend;
 
     private final Map<ItemStack, Integer> deposit = new HashMap<>();
     private final Map<Location, Generator> generatorMap = new HashMap<>();
     private final Map<Class<?>, AtomicBoolean> optionMap = new HashMap<>();
 
+    private final Map<Kit, AtomicLong> intervalMap = new HashMap<>();
+
     private Material lastGeneratorMaterial;
 
     private Map<String, TeleportHandler> requests = new HashMap<>();
     private Map<String, User> sentRequests = new HashMap<>();
+
+    private User lastReceiver;
+    private final List<User> blocked = new ArrayList<>();
+    private final List<User.ToggleType> toggleTypes = new ArrayList<>();
+
     public User(String name){
         this.name = name;
+    }
+
+    public boolean canClaim(Kit kit){
+        AtomicLong a = intervalMap.get(kit);
+        return a == null || a.get() < System.currentTimeMillis();
+    }
+
+    public Inventory claim(Kit kit){
+        AtomicLong atomicLong = intervalMap.get(kit);
+
+        if(atomicLong == null) {
+            atomicLong = new AtomicLong();
+            intervalMap.put(kit, atomicLong);
+        }
+
+        atomicLong.set(System.currentTimeMillis() + kit.getDelay());
+
+        int size;
+
+        if(kit.getItemStackList().size() <= 9) size = 9;
+        else if(kit.getItemStackList().size() <= 2*9) size = 2*9;
+        else if(kit.getItemStackList().size() <= 3*9) size = 3*9;
+        else if(kit.getItemStackList().size() <= 4*9) size = 4*9;
+        else if(kit.getItemStackList().size() <= 5*9) size = 5*9;
+        else size = 6*9;
+
+        Inventory claim = Main.getInstance().getKitCache().CLAIM;
+
+        Inventory inventory = Bukkit.createInventory(null, size, claim.getTitle().replace("%kit%", kit.getId()));
+        inventory.addItem(kit.getItemStackList().toArray(new ItemStack[]{}));
+
+        return inventory;
+    }
+
+    public Inventory preview(Kit kit){
+        Inventory preview = Main.getInstance().getKitCache().PREVIEW;
+
+        Inventory inventory = Bukkit.createInventory(null, preview.getSize(), preview.getTitle().replace("%kit%", kit.getId()));
+        inventory.setContents(preview.getContents());
+        inventory.addItem(kit.getItemStackList().toArray(new ItemStack[]{}));
+
+        return inventory;
+    }
+
+    public long getKitDelay(Kit kit){
+        return intervalMap.get(kit).get();
     }
 
     public void setScoreBoard(ScoreBoard scoreBoard) {
@@ -208,9 +269,8 @@ public class User implements Rank, Sender, Options {
     @Override
     public void send() {
         if(player == null) return;
-        String message = String.join("\n", messages);
+        player.sendMessage(ColorHelper.translateColors(String.join("\n", messages)));
         messages.clear();
-        player.sendMessage(ColorHelper.translateColors(message));
     }
 
     @Override
@@ -237,40 +297,40 @@ public class User implements Rank, Sender, Options {
         this.uuid = uuid;
     }
 
-    public Optional<Player> asPlayer() {
-        return Optional.ofNullable(player);
+    public NewerOptional<Player> asPlayer() {
+        return NewerOptional.ofNullable(player);
     }
 
-    public Optional<Guild> getGuild() {
-        return Optional.ofNullable(guild);
+    public NewerOptional<Guild> getGuild() {
+        return NewerOptional.ofNullable(guild);
     }
 
     public boolean hasGuild(){
         return guild != null;
     }
 
-    public Optional<ScoreBoard> getScoreboard() {
-        return Optional.ofNullable(scoreBoard);
+    public NewerOptional<ScoreBoard> getScoreboard() {
+        return NewerOptional.ofNullable(scoreBoard);
     }
 
-    public Optional<TabList> getTabList() {
-        return Optional.ofNullable(tabList);
+    public NewerOptional<TabList> getTabList() {
+        return NewerOptional.ofNullable(tabList);
     }
 
-    public Optional<Teleport> getTeleport() {
-        return Optional.ofNullable(teleport);
+    public NewerOptional<Teleport> getTeleport() {
+        return NewerOptional.ofNullable(teleport);
     }
 
-    public Optional<TeleportHandler> fetchTeleportRequest(String name) {
-        return Optional.ofNullable(requests.get(name));
+    public NewerOptional<TeleportHandler> fetchTeleportRequest(String name) {
+        return NewerOptional.ofNullable(requests.get(name));
     }
 
-    public Optional<Actionbar> getActionbar(){
-        return Optional.ofNullable(actionbar);
+    public NewerOptional<Actionbar> getActionbar(){
+        return NewerOptional.ofNullable(actionbar);
     }
 
-    public Optional<AntiLogout> getAntyLogout() {
-        return Optional.ofNullable(antiLogout);
+    public NewerOptional<AntiLogout> getAntyLogout() {
+        return NewerOptional.ofNullable(antiLogout);
     }
 
     public void setGuild(Guild guild) {
@@ -300,17 +360,19 @@ public class User implements Rank, Sender, Options {
             });
             this.sentRequests.put(user.getName(), user);
             return true;
+        } else {
+            prepareMessage(Main.getInstance().getConfiguration().COMMAND_TELEPORT_ALREADY_REQUEST).with("playerName", user.getName()).send();
+            return false;
         }
-        return false;
     }
 
     public long getTeleportDelay() {
         return teleportDelay;
     }
 
-    public Optional<Long> getTeleportDateExpire(User user) {
+    public NewerOptional<Long> getTeleportDateExpire(User user) {
         TeleportHandler handler;
-        return Optional.of((handler = requests.getOrDefault(user, null)) == null ? 0 : handler.getExpireDate());
+        return NewerOptional.ofNullable((handler = requests.get(user.getName())) == null ? null : handler.getExpireDate());
     }
 
     public int getTeleportRequests() {
@@ -371,8 +433,8 @@ public class User implements Rank, Sender, Options {
         return player != null && player.hasPermission(s);
     }
 
-    public Optional<PlayerPacket> getPlayerPacket() {
-        return Optional.ofNullable(playerPacket);
+    public NewerOptional<PlayerPacket> getPlayerPacket() {
+        return NewerOptional.ofNullable(playerPacket);
     }
 
     public void setPlayerPacket(PlayerPacket playerPacket) {
@@ -390,11 +452,12 @@ public class User implements Rank, Sender, Options {
 
     public String getGuildPrefix(Guild guild){
         Configuration configuration = Main.getInstance().getConfiguration();
-        if(this.guild == null && guild == null) return "";
+        if(guild == null) return "";
         else if(this.guild == null) return configuration.PREFIX_GUILD_OTHER.replace("%tag%", guild.getTag());
         else if(this.guild.isEnemy(guild)) return configuration.PREFIX_GUILD_WAR.replace("%tag%", guild.getTag());
         else if(this.guild.getAllies().contains(guild)) return configuration.PREFIX_GUILD_ALLY.replace("%tag%", guild.getTag());
-        else return configuration.PREFIX_GUILD_OWN.replace("%tag%", guild.getTag());
+        else if(this.guild.equals(guild)) return configuration.PREFIX_GUILD_OWN.replace("%tag%", guild.getTag());
+        else return configuration.PREFIX_GUILD_OTHER.replace("%tag%", guild.getTag());
     }
 
     public boolean isOnline() {
@@ -415,7 +478,7 @@ public class User implements Rank, Sender, Options {
     private static final Optional<Field> pingField = ReflectionHelper.getField(EntityPlayerClass, "ping");
 
     public int getPing() {
-        Object ep = null;
+        Object ep;
         if((ep = playerPacket.getEntityPlayer().orElse(null)) == null) return -100;
         Object finalEp = ep;
         return (int) LambdaBypass.getOptional(pingField, field -> ReflectionHelper.getValue(field, finalEp).get()).getObject();
@@ -630,5 +693,122 @@ public class User implements Rank, Sender, Options {
         if(atomicBoolean == null) return false;
         atomicBoolean.set(!atomicBoolean.get());
         return atomicBoolean.get();
+    }
+
+    public void chat(String message) {
+        if(player == null) return;
+        player.chat(message);
+    }
+
+    public InetSocketAddress getInetSocketAddress() {
+        return inetSocketAddress;
+    }
+
+    public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
+        this.inetSocketAddress = inetSocketAddress;
+    }
+
+    public long getJoin() {
+        return join;
+    }
+
+    public void setJoin(long join) {
+        this.join = join;
+    }
+
+    public long getQuit() {
+        return quit;
+    }
+
+    public void setQuit(long quit) {
+        this.quit = quit;
+    }
+
+    public double getMoney() {
+        return money;
+    }
+
+    public void setMoney(double money) {
+        this.money = money;
+    }
+
+    public void setTimeSpend(long timeSpend) {
+        this.timeSpend = timeSpend;
+    }
+
+    public void updateTimeSpend(){
+        this.timeSpend += (System.currentTimeMillis() - join);
+    }
+
+    public long getTimeSpend() {
+        return timeSpend + (System.currentTimeMillis() - join);
+    }
+
+    public User getLastReceiver() {
+        return lastReceiver;
+    }
+
+    public void setLastReceiver(User lastReceiver) {
+        this.lastReceiver = lastReceiver;
+    }
+
+    public List<User> getBlocked() {
+        return blocked;
+    }
+
+    public boolean isBlocked(User user){
+        return blocked.contains(user);
+    }
+
+    public boolean block(User user){
+        if(isBlocked(user)) return false;
+        blocked.add(user);
+        return true;
+    }
+
+    public boolean unblock(User user){
+        if(!isBlocked(user)) return false;
+        blocked.add(user);
+        return true;
+    }
+
+    public boolean isToggle(ToggleType message) {
+        return toggleTypes.contains(message);
+    }
+
+    public List<ToggleType> getToggleTypes() {
+        return toggleTypes;
+    }
+
+    public void disableToggle(ToggleType toggleType){
+        toggleTypes.remove(toggleType);
+    }
+
+    public void enableToggle(ToggleType toggleType){
+        toggleTypes.add(toggleType);
+    }
+
+    public boolean isVanish() {
+        return vanish;
+    }
+
+    public void setVanish(boolean vanish) {
+        this.vanish = vanish;
+    }
+
+    public void updateVisibility(){
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            if (vanish && !p.hasPermission("sacore.vanish.donthide")) {
+                p.hidePlayer(player);
+            } else {
+                p.showPlayer(player);
+            }
+        });
+    }
+
+    public enum ToggleType {
+        MESSAGE,
+        CHAT,
+        DROP
     }
 }

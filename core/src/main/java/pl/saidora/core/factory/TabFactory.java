@@ -1,11 +1,9 @@
 package pl.saidora.core.factory;
 
-import pl.saidora.core.model.a;
 import pl.saidora.core.model.impl.User;
 import pl.saidora.core.model.impl.guild.Guild;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class TabFactory {

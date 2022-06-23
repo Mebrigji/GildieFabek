@@ -45,28 +45,24 @@ public class RepairCommand implements Command {
                     executor.sendMessage(Main.getInstance().getConfiguration().COMMAND_REPAIR_ALL_EMPTY);
                     return;
                 }
-                itemStacks = new ArrayList<>();
-                for (int i = 0; i < player.getInventory().getSize(); i++) {
-                    ItemStack itemStack = player.getInventory().getItem(i);
-                    if(MaterialHelper.isTool(itemStack)){
-                        itemStack.setDurability((short) 0);
-                        player.getInventory().setItem(i, itemStack);
-                        itemStacks.add(itemStack);
-                    }
-                }
-                ItemStack helmet = repair(player, EquipmentSlot.HEAD), chest = repair(player, EquipmentSlot.CHEST), legs = repair(player, EquipmentSlot.LEGS), boots = repair(player, EquipmentSlot.FEET);
-                if(helmet != null) itemStacks.add(helmet);
-                if(chest != null) itemStacks.add(chest);
-                if(legs != null) itemStacks.add(legs);
-                if(boots != null) itemStacks.add(boots);
 
-                List<ItemStack> finalItemStacks = itemStacks;
+                List<ItemStack> repaired = new ArrayList<>();
+
+                itemStacks.forEach(itemStack -> {
+                    if(itemStack.getDurability() == 0) return;
+                    itemStack.setDurability((short) 0);
+                    repaired.add(itemStack);
+                });
+
+                player.updateInventory();
 
                 MessageBuilder messageBuilder = executor.prepareMessage(Main.getInstance().getConfiguration().COMMAND_REPAIR_ALL)
-                        .with("itemsCount", itemStacks.size())
+                        .with("itemsCount", repaired.size())
                         .withPreparingComponent("itemsList", component -> {
                             component.setText("");
-                            finalItemStacks.forEach(itemStack -> {
+                            if(repaired.isEmpty()) component.addExtra("Brak");
+                            else
+                            repaired.forEach(itemStack -> {
                                 TextComponent hover = new TextComponent();
                                 MessageHolder holder = MessageHolder.create(itemStack.hasItemMeta() && itemStack.getItemMeta().hasDisplayName() ? itemStack.getItemMeta().getDisplayName() : itemStack.getType().name(), itemStack);
                                 hover.setText(ColorHelper.translateColors(holder.text()));
@@ -83,8 +79,10 @@ public class RepairCommand implements Command {
                     executor.sendMessage(Main.getInstance().getConfiguration().COMMAND_REPAIR_MUST_BE_ITEM);
                     return;
                 }
+
                 itemStack.setDurability((short) 0);
-                player.setItemInHand(itemStack);
+                player.updateInventory();
+
                 executor.prepareMessage(Main.getInstance().getConfiguration().COMMAND_REPAIR_ONE)
                         .with("item",
                                 MessageHolder.create(itemStack.hasItemMeta() && itemStack.getItemMeta().hasDisplayName() ?
@@ -94,52 +92,16 @@ public class RepairCommand implements Command {
         });
     }
 
-    private ItemStack repair(Player player, EquipmentSlot slotType){
-        ItemStack itemStack = null;
-        if(slotType.equals(EquipmentSlot.HEAD)){
-            itemStack = player.getEquipment().getHelmet();
-            if(itemStack != null && MaterialHelper.isTool(itemStack)){
-                itemStack.setDurability((short) 0);
-                player.getEquipment().setHelmet(itemStack);
-            }
-        } else if(slotType.equals(EquipmentSlot.CHEST)){
-            itemStack = player.getEquipment().getChestplate();
-            if(itemStack != null && MaterialHelper.isTool(itemStack)){
-                itemStack.setDurability((short) 0);
-                player.getEquipment().setChestplate(itemStack);
-            }
-        } else if(slotType.equals(EquipmentSlot.LEGS)){
-            itemStack = player.getEquipment().getLeggings();
-            if(itemStack != null && MaterialHelper.isTool(itemStack)){
-                itemStack.setDurability((short) 0);
-                player.getEquipment().setLeggings(itemStack);
-            }
-        } else if (slotType.equals(EquipmentSlot.FEET)){
-            itemStack = player.getEquipment().getBoots();
-            if(itemStack != null && MaterialHelper.isTool(itemStack)){
-                itemStack.setDurability((short) 0);
-                player.getEquipment().setBoots(itemStack);
-            }
-        } else if(slotType.equals(EquipmentSlot.HAND)){
-            itemStack = player.getEquipment().getItemInHand();
-            if(itemStack != null && MaterialHelper.isTool(itemStack)){
-                itemStack.setDurability((short) 0);
-                player.getEquipment().setItemInHand(itemStack);
-            }
-        }
-        return itemStack;
-    }
-
     private List<ItemStack> getItems(Player player){
         List<ItemStack> itemStacks = new ArrayList<>();
 
         for (ItemStack content : player.getInventory().getContents()) {
-            if(content == null || content.getType().equals(Material.AIR)) break;
+            if(content == null || content.getType().equals(Material.AIR)) continue;
             if(MaterialHelper.isTool(content)) itemStacks.add(content);
         }
 
         for (ItemStack armorContent : player.getInventory().getArmorContents()) {
-            if(armorContent == null || armorContent.getType().equals(Material.AIR)) break;
+            if(armorContent == null || armorContent.getType().equals(Material.AIR)) continue;
             if(MaterialHelper.isTool(armorContent)) itemStacks.add(armorContent);
         }
 

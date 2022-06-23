@@ -1,8 +1,7 @@
-package pl.saidora.core.model;
+package pl.saidora.core.model.impl.guild;
 
 import org.bukkit.Material;
 import pl.saidora.core.model.impl.User;
-import pl.saidora.core.model.impl.guild.Guild;
 
 import java.util.function.Function;
 

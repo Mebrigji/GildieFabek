@@ -16,7 +16,7 @@ public class GuildCreateCommand implements Command {
     @Override
     public void run(Executor executor) {
         String[] args = executor.getCommandArguments();
-        Main.getInstance().getUserCache().lookByName(executor.getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(executor.getName(), true).ifPresent(user -> {
             if(user.hasGuild()) {
                 user.sendMessage("Has guild");
                 return;
@@ -59,7 +59,7 @@ public class GuildCreateCommand implements Command {
 
                 Main.getInstance().getOnlineUsers().forEach((userName, onlineUser) -> {
                     if(userName.equalsIgnoreCase(user.getName())) return;
-                    builder.setUser(onlineUser);
+                    builder.setExecutor(onlineUser.getCommandSender());
                     builder.send();
                 });
             } else {

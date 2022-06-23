@@ -1,6 +1,7 @@
 package pl.saidora.core.cache;
 
 import org.bukkit.entity.Player;
+import pl.saidora.core.factory.NewerOptional;
 import pl.saidora.core.model.impl.Abyss;
 import pl.saidora.core.model.Options;
 import pl.saidora.core.model.impl.User;
@@ -16,12 +17,12 @@ public class UserCache {
     private final Map<String, User> cache = new HashMap<>();
     private final Map<String, User> onlineCache = new HashMap<>();
 
-    public Optional<User> lookByUUID(UUID uuid, boolean online){
-        return online ? onlineCache.values().stream().filter(user -> user.getUUID().equals(uuid)).findFirst() :  cache.values().stream().filter(user -> user.getUUID().equals(uuid)).findFirst();
+    public NewerOptional<User> findByUUID(UUID uuid, boolean online){
+        return NewerOptional.fromOldOptional(online ? onlineCache.values().stream().filter(user -> user.getUUID().equals(uuid)).findFirst() :  cache.values().stream().filter(user -> user.getUUID().equals(uuid)).findFirst());
     }
 
-    public Optional<User> lookByName(String name, boolean online){
-        return Optional.ofNullable(online ? onlineCache.get(name) : cache.get(name));
+    public NewerOptional<User> findByName(String name, boolean online){
+        return NewerOptional.ofNullable(online ? onlineCache.get(name) : cache.get(name));
     }
 
     public User get(Function<String, User> function, String name){

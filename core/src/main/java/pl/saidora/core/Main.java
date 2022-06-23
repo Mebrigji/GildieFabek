@@ -17,18 +17,15 @@ import pl.saidora.api.Accessibler;
 import pl.saidora.api.functions.LambdaBypass;
 import pl.saidora.api.helpers.ReflectionHelper;
 import pl.saidora.api.helpers.SystemHelper;
-import pl.saidora.core.commands.RepairCommand;
+import pl.saidora.core.configuration.serializers.SerializerPack;
+import pl.saidora.core.commands.*;
 import pl.saidora.core.commands.guild.GuildCreateCommand;
 import pl.saidora.core.commands.guild.GuildInfoCommand;
 import pl.saidora.core.commands.guild.GuildPanelCommand;
 import pl.saidora.core.model.ChatMessage;
 import pl.saidora.core.helpers.MessageHolder;
 import pl.saidora.core.cache.*;
-import pl.saidora.core.commands.AbyssCommand;
-import pl.saidora.core.commands.CoreCommand;
-import pl.saidora.core.commands.GuildCommand;
 import pl.saidora.core.configuration.Configuration;
-import pl.saidora.core.configuration.ConfigurationSerdes;
 import pl.saidora.core.factory.ScoreboardFactory;
 import pl.saidora.core.factory.TabFactory;
 import pl.saidora.core.helpers.ItemHelper;
@@ -64,6 +61,7 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
     private final LeaderboardCache leaderboardCache = new LeaderboardCache();
     private final GeneratorCache generatorCache = new GeneratorCache();
     private final AbyssCache abyssCache = new AbyssCache();
+    private KitCache kitCache;
     private ChatCache chatCache;
 
     public GuildCache getGuildCache() {
@@ -141,7 +139,7 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
 
         chatCache = ConfigManager.create(ChatCache.class, i -> {
             i.withBindFile(getDataFolder() + "/formats.yml");
-            i.withConfigurer(new YamlBukkitConfigurer(), new ConfigurationSerdes());
+            i.withConfigurer(new YamlBukkitConfigurer(), new SerializerPack());
             i.saveDefaults();
             i.load(true);
         });
@@ -192,7 +190,7 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
 
         chatCache = ConfigManager.create(ChatCache.class, i -> {
             i.withBindFile(getDataFolder() + "/formats.yml");
-            i.withConfigurer(new YamlBukkitConfigurer(), new ConfigurationSerdes());
+            i.withConfigurer(new YamlBukkitConfigurer(), new SerializerPack());
             i.saveDefaults();
             i.load(true);
         });
@@ -286,7 +284,9 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
                     int finalI1 = i;
                     tabFactory.addReplacement("top_" + (i + 1) + "-g-tag", u -> {
                         User user = userLeaderboard.getByPosition(finalI1);
-                        return user == null ? "---" : user.getGuild().isPresent() ? u.getGuildPrefix(user.getGuild().get()) : "";
+                        if(user == null) return "";
+                        Guild guild = user.getGuild().orElse(null);
+                        return u.getGuildPrefix(guild);
                     });
                     int finalI2 = i;
                     tabFactory.addReplacement("top_" + (i + 1) + "-name", u -> {
@@ -340,7 +340,18 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
             commandMap.remove("bukkit:about");
             commandMap.remove("spigot:restart");
 
-            registerCommand(new CoreCommand(), new GuildCommand(), new AbyssCommand(), new RepairCommand());
+            new Reflections("pl.saidora.core.commands").getSubTypesOf(pl.saidora.core.commands.system.Command.class).forEach(aClass -> {
+                pl.saidora.core.commands.system.Command command = (pl.saidora.core.commands.system.Command) ReflectionHelper.newInstance(aClass);
+                accessibler.addCommand(command.commandInfo().name(), pl.saidora.core.commands.system.Command.toBukkitCommand(command), getServer());
+            });
+
+            kitCache = ConfigManager.create(KitCache.class, it -> {
+                it.withBindFile(getDataFolder() + "/kits.yml");
+                it.withConfigurer(new YamlBukkitConfigurer(), new SerdesBukkit(), new SerializerPack());
+                it.saveDefaults();
+                it.load(true);
+            });
+
             GuildCommand.registerSubCommand(new GuildCreateCommand(), new GuildInfoCommand(), new GuildPanelCommand());
         //} else {
         //    Bukkit.getPluginManager().registerEvents(this, this);
@@ -404,5 +415,9 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
 
     public LicenseHelper getCl() {
         return cl;
+    }
+
+    public KitCache getKitCache() {
+        return kitCache;
     }
 }

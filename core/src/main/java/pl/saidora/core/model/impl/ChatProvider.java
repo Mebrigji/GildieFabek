@@ -1,4 +1,4 @@
-package pl.saidora.core.model;
+package pl.saidora.core.model.impl;
 
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.group.Group;

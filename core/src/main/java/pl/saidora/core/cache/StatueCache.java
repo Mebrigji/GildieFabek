@@ -1,6 +1,7 @@
 package pl.saidora.core.cache;
 
 import org.bukkit.Location;
+import pl.saidora.core.factory.NewerOptional;
 import pl.saidora.core.helpers.Overwrite;
 import pl.saidora.core.model.impl.TeleportStatue;
 
@@ -17,8 +18,8 @@ public class StatueCache {
         return cache;
     }
 
-    public Optional<TeleportStatue> getStatue(Location location){
-        return Optional.ofNullable(cache.get(location));
+    public NewerOptional<TeleportStatue> getStatue(Location location){
+        return NewerOptional.ofNullable(cache.get(location));
     }
 
     public Overwrite<TeleportStatue> registerStatue(Location location){

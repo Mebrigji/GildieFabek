@@ -57,6 +57,10 @@ public class StringHelper {
                 .collect(Collectors.toList()));
     }
 
+    public static List<String> startWith(String[] arguments, String text) {
+        return startWith(arguments, text, true, -1);
+    }
+
     public static <T> List<T> subList(int from, int to, List<T> list){
         if(from > to) from = 0;
         if(to < from) to = from + 1;

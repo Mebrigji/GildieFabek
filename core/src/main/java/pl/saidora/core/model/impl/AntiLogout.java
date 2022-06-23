@@ -36,7 +36,7 @@ public class AntiLogout {
 
     public void setEnd(long end) {
         start = System.currentTimeMillis();
-        this.end = System.currentTimeMillis() + end;
+        this.end = System.currentTimeMillis() + (end * 1000);
     }
 
     public long getStart() {
@@ -45,5 +45,11 @@ public class AntiLogout {
 
     public void setStart(long start) {
         this.start = start;
+    }
+
+    public void death(){
+        start = 0;
+        end = 0;
+        damageMap.clear();
     }
 }

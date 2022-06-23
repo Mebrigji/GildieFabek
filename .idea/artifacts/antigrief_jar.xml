@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="antigrief:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/antigrief_jar</output-path>
+    <root id="archive" name="antigrief.jar">
+      <element id="module-output" name="antigrief" />
+      <element id="module-output" name="api" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-yaml-snakeyaml/3.4.2/okaeri-configs-yaml-snakeyaml-3.4.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-serdes-bukkit/3.4.2/okaeri-configs-serdes-bukkit-3.4.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-yaml-bukkit/3.4.2/okaeri-configs-yaml-bukkit-3.4.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-core/3.4.2/okaeri-configs-core-3.4.2.jar" path-in-jar="/" />
+      <element id="file-copy" path="$PROJECT_DIR$/antigrief/src/main/resources/plugin.yml" />
+    </root>
+  </artifact>
+</component>

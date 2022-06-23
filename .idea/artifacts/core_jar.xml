@@ -1,12 +1,11 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="core:jar">
-    <output-path>$PROJECT_DIR$/../../../zamowienie/fabek/megadrop/plugins</output-path>
+    <output-path>$USER_HOME$/AppData/Roaming/.feather/player-server/servers/32a3c355-1364-4e55-b0fa-5ce7916b652c/plugins</output-path>
     <root id="archive" name="core.jar">
       <element id="module-output" name="core" />
       <element id="module-output" name="api" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.32/slf4j-api-1.7.32.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/javassist/javassist/3.28.0-GA/javassist-3.28.0-GA.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-core/3.4.2/okaeri-configs-core-3.4.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-serdes-bukkit/3.4.2/okaeri-configs-serdes-bukkit-3.4.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/okaeri/okaeri-configs-yaml-snakeyaml/3.4.2/okaeri-configs-yaml-snakeyaml-3.4.2.jar" path-in-jar="/" />

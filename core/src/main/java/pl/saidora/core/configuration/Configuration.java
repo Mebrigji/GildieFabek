@@ -79,7 +79,6 @@ public class Configuration extends OkaeriConfig {
     public String MESSAGE_TELEPORT_ACCEPT_TARGET_SINGLE = "&7Gracz &d%playerName% &7zaackeptowal prosbe o teleportacje.";
     public String MESSAGE_TELEPORT_ACCEPT_TARGET_MANY = "&7Gracz &d%playerName% &7zaakceptowal prosbe o teleportacje od Ciebie i &d%count% &7innych graczy.";
 
-
     public String MESSAGE_TELEPORT_SCHEDULER_START = "&7Ustawiam miejsce docelowe, zaczynam rozgrzewanie teleportu..";
     public String MESSAGE_TELEPORT_SCHEDULER_TIMER = "&7Teleport się rozgrzewa.. &7Pozostalo: &d%count% sek.";
     public String MESSAGE_TELEPORT_SCHEDULER_END_NEW = "&cAnuluje teleportacje.. &7Zmieniam miejsce docelowe..";
@@ -239,6 +238,9 @@ public class Configuration extends OkaeriConfig {
     public String EVENT_COMBAT_START = "&cZostales zaatakowany, zostala nalozona blokada na wychodzenie z gry.\n&8* &cInicjator: &4%attackerName%";
     public String EVENT_COMBAT_END = "&aWalka sie zakonczyla, mozesz sie wylogowac.";
 
+    public String EVENT_GENERATOR_DAMAGE_ATTACKER = "&7Pozostalo &c%hp% hp.";
+    public String EVENT_GENERATOR_DAMAGE_OWNER = "&7Ktos niszczy twoj generator! Pozostalo &c%hp% zycia.\n&7Lokalizacja: &a%location%";
+
     public String EVENT_DEATH_MESSAGE_BY_PLAYER = "&7Gracz &";
 
     @Comment({"###", "(8) Wiadomości gildyjne", "###"})
@@ -316,12 +318,12 @@ public class Configuration extends OkaeriConfig {
 
     public String ABYSS_GUI_NEXT_EXISTS_HEAD = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19";
 
-    public ItemStack ABYSS_GUI_NEXT_EMPTY = new ItemHelper(Material.SKULL_ITEM, 1, (short)3)
+    public ItemStack ABYSS_GUI_NEXT_EMPTY = new ItemHelper(Material.SKULL_ITEM, 1, (short) 3)
             .editMeta(itemMeta -> itemMeta.setDisplayName(ColorHelper.translateColors("&5* &7Brak kolejnej strony &5*")));
 
     public String ABYSS_GUI_NEXT_EMPTY_HEAD = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjJmM2EyZGZjZTBjM2RhYjdlZTEwZGIzODVlNTIyOWYxYTM5NTM0YThiYTI2NDYxNzhlMzdjNGZhOTNiIn19fQ==";
 
-    public ItemStack ABYSS_GUI_PREVIOUS_EMPTY = new ItemHelper(Material.SKULL_ITEM, 1, (short)3)
+    public ItemStack ABYSS_GUI_PREVIOUS_EMPTY = new ItemHelper(Material.SKULL_ITEM, 1, (short) 3)
             .editMeta(itemMeta -> itemMeta.setDisplayName(ColorHelper.translateColors("&5* &7Brak poprzedniej strony &5*")));
 
     public String ABYSS_GUI_PREVIOUS_EMPTY_HEAD = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmIwZjZlOGFmNDZhYzZmYWY4ODkxNDE5MWFiNjZmMjYxZDY3MjZhNzk5OWM2MzdjZjJlNDE1OWZlMWZjNDc3In19fQ==";
@@ -346,13 +348,108 @@ public class Configuration extends OkaeriConfig {
     public String ABYSS_CLOSED = "\n&7Otchlan jest aktualnie zamknieta.";
 
     @Comment({"###", "(10) Toolsy", "###"})
+    @Comment({"###", "(10.0) Repair Command", "###"})
     public String COMMAND_REPAIR_MUST_BE_ITEM = "&7Rzecz ktora chcesz naprawic musi byc przedmiotem.";
     public String COMMAND_REPAIR_ONE = "&7Pomyslnie naprawiono &d%item%";
 
     public String COMMAND_REPAIR_ALL_EMPTY = "&7Brak przedmiotow do naprawy.";
     public String COMMAND_REPAIR_ALL = "&7Pomyslnie naprawiono &d%itemsCount% &7przedmiotow.\n&8[&d%itemsList%&8]";
 
-    @Comment("###")
+    @Comment({"###", "(10.1) GameMode Command", "###"})
+    public String COMMAND_GAMEMODE_INVALID_PLAYER = "&7Musisz okreslic gracza online.\n&7Przyklad: &d/gamemode %mode% %playerName%";
     public String COMMAND_GAMEMODE_INVALID_MODE = "&7Tryb gry &d%mode% &7nie istnieje.";
 
+    public String COMMAND_GAMEMODE_CHANGE_SELF = "&7Twoj tryb gry zostal zmieniony na &d%mode%";
+    public String COMMAND_GAMEMODE_CHANGE_EXECUTOR = "&7Tryb gry gracza &d%playerName% &7zostal zmieniony na &d%mode%";
+    public String COMMAND_GAMEMODE_CHANGE_TARGET = "&7Twoj tryb gry zostal zmieniony na &d%mode% &7przez &d%executorName%";
+
+    @Comment({"###", "(10.2) Item Command", "###"})
+    public String COMMAND_ITEM_AIR = "&7Musisz miec przedmiot w rece.";
+
+    public String COMMAND_ITEM_NAME_SET = "&7Nazwa przedmiotu zostala zmieniona. %item-changes%";
+    public String COMMAND_ITEM_NAME_CLEAR = "&7Nazwa przedmiotu zostala usunieta. %item-changes%";
+
+    public String COMMAND_ITEM_LORE_SET = "&7Opis przedmiotu zostal zmieniony. %item-changes%";
+    public String COMMAND_ITEM_LORE_CLEAR = "&7Opis przedmiotu zostal usuniety. %item-changes%";
+
+    @Comment({"###", "(10.3) Teleport Command", "###"})
+    public String COMMAND_TELEPORT_OFFLINE = "&7Podany gracz jest offline.";
+    public String COMMAND_TELEPORT_EQUALS = "&7Nie mozesz sie przeteleportowac do siebie.";
+    public String COMMAND_TELEPORT_ALREADY_REQUEST = "&7Wyslales juz prosbe o teleportacje do tego gracza.";
+
+    @Comment({"###", "(10.4) Sudo Command", "###"})
+    public String COMMAND_SUDO_OFFLINE = "&7Podany gracz jest offline";
+    public String COMMAND_SUDO_EXECUTE_COMMAND = "&7Pomyslnie wymuszono na graczu &d%playerName% &7uzycie komendy &8\"&d%command%&8\"";
+    public String COMMAND_SUDO_EXECUTE_CHAT = "&7Pomyslnie wymuszono na graczu &d%playerName% &7wyslanie wiadomosci o tresci &8\"&d%message%&8\"";
+
+    @Comment({"###", "(10.5) Info Command", "###"})
+    public String COMMAND_INFO = "&7Sprawdzasz uzytkownika: &d%userName%\n" +
+            "&7Adres IP: &d%ip-hidden%&7\n" +
+            "&7Przegrany czas: &d%time%\n" +
+            "&7Data wejscia: &d%last-join%\n" +
+            "&7Data wyjscia: &d%last-quit%\n" +
+            "&7Gildia: &d%guild%\n" +
+            "&7Pieniadze: &d%money%$\n" +
+            "&7Ranga: &d%groupName%";
+    public String COMMAND_INFO_INVALID = "&7Uzytkownik o nazwie &d%userName% &7nie istnieje.";
+
+    @Comment({"###", "(10.6) Message Command", "###"})
+    public String COMMAND_MESSAGE_EQUALS = "&7No ale, ze chcesz pisac samotnie?";
+    public String COMMAND_MESSAGE_OFFLINE = "&7Podany gracz jest offline.";
+    public String COMMAND_MESSAGE_EMPTY = "&7Podaj treść wiadomości.";
+    public String COMMAND_MESSAGE_BLOCK = "&7Gracz &d%playerName% &7wylaczyl od Ciebie wiadomosci.";
+    public String COMMAND_MESSAGE_TOGGLE = "&7Gracz &d%playerName% &7wylaczyl wiadomosci prywatne.";
+
+    public String COMMAND_MESSAGE_PREFIX_ONE = "&7Napisales do &d%playerName% &7wiadomosc o tresci: &f%message%";
+    public String COMMAND_MESSAGE_PREFIX_SECOND = "&7Otrzymales wiadomosc od &d%playerName% &7o tresci: &f%message%";
+
+    @Comment({"###", "(10.7) Reply Command", "###"})
+    public String COMMAND_REPLY_EMPTY = "&7Nie odnaleziono uzytkownika z ktorym pisales.";
+    public String COMMAND_REPLY_OFFLINE = "&7Gracz &d%playerName% &7nie jest juz aktywny.";
+    public String COMMAND_REPLY_BLOCK = "&7Gracz &d%playerName% &7wylaczyl od Ciebie wiadomosci.";
+    public String COMMAND_REPLY_TOGGLE = "&7Gracz &d%playerName% &7wylaczyl wiadomosci prywatne.";
+
+    public String COMMAND_REPLY_PREFIX_ONE = "&7Odpisales uzytkownikowi &d%playerName%&7. Tresc wiadomosci: &f%message%";
+    public String COMMAND_REPLY_PREFIX_SECOND = "&7Otrzymales wiadomosc zwrotna od &d%playerName% &7o tresci: &f%message%";
+
+    @Comment({"###", "(10.8) Tpaccept Command", "###"})
+    public String COMMAND_TPACCEPT_LIST_EMPTY = "&7Brak zapytan o teleportacje.";
+    public String COMMAND_TPACCEPT_LIST = "&7Masz &d%amount% &7zapytan o teleportacje. &d[%list|NAJEDZ%]";
+
+    @Comment("Wiadomosc, ktora wysyla sie do osoby, ktora bedzie przeteleportowana znajduje sie w sekcji (1)")
+    public String COMMAND_TPACCEPT_ALL = "&7Prosba o teleportacje od &d%amount% &7osob zostala zaakceptowana.";
+    public String COMMAND_TPACCEPT = "&7Zaakceptowales prosbe o teleportacje od gracza &d%playerName%";
+    public String COMMAND_TPACCEPT_NOT_SENT = "&7Gracz &d%playerName% &7nie wyslal do Ciebie prosby o teleportacje.";
+
+    @Comment({"###", "(10.9) Tpa Command", "###"})
+    public String COMMAND_FLY_OFFLINE = "&7Podany grac zjest offline.";
+
+    public String COMMAND_FLY_CHANGE_ON = "&7Przydzielono mozliwosc latania.";
+    public String COMMAND_FLY_CHANGE_OFF = "&7Odebrano mozliwosc latania.";
+
+    public String COMMAND_FLY_CHANGE_OTHER_ON = "&7Gracz &d%playerName% &7dostal mozliwosc latania.";
+    public String COMMAND_FLY_CHANGE_OTHER_OFF = "&7Gracz &d%playerName% &7stracil mozliwosc latania.";
+
+    public String COMMAND_FLY_CHECK_ON = "&7Gracz &d%playerName% &7ma &adostep &7do latania.";
+    public String COMMAND_FLY_CHECK_OFF = "&7Gracz &d%playerName% &7nie posiada &cdostepu &7do latania.";
+
+    @Comment({"###", "(10.10) Enchant Command", "###"})
+    public String COMMAND_ENCHANT_LEVEL = "&7Poziom musi byc liczba.";
+    public String COMMAND_ENCHANT_INVALID = "&7Nie odnaleziono podanego enchantu.";
+    public String COMMAND_ENCHANT_AIR = "&7Nie mozesz zaczarowac powietrza.";
+
+    public String COMMAND_ENCHANT_ADD = "&7Pomyslnie dodano enchant &d%enchantName% &7o poziomie &d%level%";
+    public String COMMAND_ENCHANT_REMOVE = "&7Pomyslnie usunieto enchant &d%enchantName%";
+    public String COMMAND_ENCHANT_UPDATE = "&7Enchant &d%enchantName% &7zostal nadpisany. Nowy poziom enchantu: &d%level%";
+
+    @Comment({"###", "(13) Zestawy", "###"})
+    public List<String> KIT_GUI_ITEM_KIT_LORE = Arrays.asList(" &8--- ", "&8>> &7Posiadasz dostep: &d%have-access%", "&8>> &7Mozesz odebrac: &d%can-claim%", " ", "&7Jesli chcesz zobaczyc co", "&7posiada zestaw &f&nkliknij&r", "&dPRAWY PRZYCISK MYSZY", " &7Odbior zestawu: &dLEWY PRZYCISK MYSZY");
+
+    @Comment("Czy ma dodawac item do menu, gdy gracz nie ma uprawnien.")
+    public boolean KIT_GUI_ADD_WHEN_NO_PERM = true;
+
+    public String KIT_MESSAGE_NO_PERM = "&7Nie posiadasz uprawnien do tego zestawu.";
+    public String KIT_MESSAGE_ALREADY_CLAIM = "&7Juz odebrales ten zestaw. Ponownie go mozesz odebrac dopiero za: &d%time%";
+    public String KIT_MESSAGE_CLAIM = "&7Odebrales zestaw &d%kitName%&7. Ponownie go mozesz odebrac za &d%time%.";
+    public String KIT_MESSAGE_DOESNT_EXISTS = "&7Podany zestaw nie istnieje.";
 }

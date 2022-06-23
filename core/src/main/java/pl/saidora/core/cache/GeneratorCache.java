@@ -1,5 +1,8 @@
 package pl.saidora.core.cache;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -43,9 +46,19 @@ public class GeneratorCache {
         } else {
             generator.setHealth(generator.getHealth() - 1);
             event.setCancelled(true);
+            event.getUser().prepareMessage(Main.getInstance().getConfiguration().EVENT_GENERATOR_DAMAGE_ATTACKER).with("hp", generator.getHealth()).send();
+            User owner = generator.getOwner();
+            if(owner.isOnline()){
+                owner.prepareMessage(Main.getInstance().getConfiguration().EVENT_GENERATOR_DAMAGE_OWNER).with("hp", generator.getHealth()).withPreparingComponent("location", textComponent -> {
+                    textComponent.setText("[LOCATION]");
+                    textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(ColorHelper.translateColors("&7X: &d" + location.getBlockX() + "\n&7Y: &d" + location.getBlockY() + "\n&7Z: &d" + location.getBlockZ()))));
+                }).send();
+            }
             if(generator.getHealth() <= 0){
                 location.getBlock().setType(Material.AIR);
                 location.getWorld().dropItemNaturally(location, Main.getInstance().getConfiguration().GENERATOR_ITEM);
+                generatorMap.remove(generator.getLocation());
+                regenMap.remove(generator.getLocation());
             }
         }
     }

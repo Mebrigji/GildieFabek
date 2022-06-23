@@ -8,6 +8,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import pl.saidora.api.helpers.ColorHelper;
 import pl.saidora.core.builder.MessageBuilder;
+import pl.saidora.core.factory.NewerOptional;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,12 +38,12 @@ public class Executor {
         return commandSender instanceof ConsoleCommandSender;
     }
 
-    public Optional<Player> asPlayer(){
-        return Optional.ofNullable(Bukkit.getPlayerExact(commandSender.getName()));
+    public NewerOptional<Player> asPlayer(){
+        return NewerOptional.ofNullable(Bukkit.getPlayerExact(commandSender.getName()));
     }
 
-    public Optional<ConsoleCommandSender> asConsoleSender(){
-        return Optional.ofNullable(commandSender instanceof Player ? null : (ConsoleCommandSender) commandSender);
+    public NewerOptional<ConsoleCommandSender> asConsoleSender(){
+        return NewerOptional.ofNullable(commandSender instanceof Player ? null : (ConsoleCommandSender) commandSender);
     }
 
     public MessageBuilder prepareMessage(List<String> messages){
@@ -96,5 +97,9 @@ public class Executor {
     public void sendMessage(TextComponent component) {
         if(commandSender instanceof Player) ((Player)commandSender).spigot().sendMessage(component);
         else commandSender.sendMessage(component.getExtra().stream().map(a -> a.toLegacyText()).collect(Collectors.joining(" ")));
+    }
+
+    public CommandSender getCommandSender() {
+        return commandSender;
     }
 }

@@ -3,6 +3,8 @@ package pl.saidora.core.builder;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import pl.saidora.api.helpers.ColorHelper;
 import pl.saidora.core.helpers.MessageHolder;
 import pl.saidora.core.commands.system.Executor;
@@ -12,11 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class MessageBuilder {
 
-    private Executor executor;
-    private User user;
+    private CommandSender executor;
 
     private String message;
 
@@ -26,21 +28,27 @@ public class MessageBuilder {
     private Map<String, Consumer<TextComponent>> multiHovers = new HashMap<>();
 
     public MessageBuilder(Executor executor, String message){
-        this.executor = executor;
+        this.executor = executor.getCommandSender();
         this.message = message;
     }
 
     public MessageBuilder(User user, String message){
-        this.user = user;
+        this.executor = user.getCommandSender();
         this.message = message;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public MessageBuilder(Player player, String message) {
+        this.executor = player;
+        this.message = message;
     }
 
-    public void setMessage(String message) {
+    public void setExecutor(CommandSender executor) {
+        this.executor = executor;
+    }
+
+    public MessageBuilder setMessage(String message) {
         this.message = message;
+        return this;
     }
 
     public MessageBuilder with(String key, Object value){
@@ -62,6 +70,7 @@ public class MessageBuilder {
 
         AtomicInteger integer = new AtomicInteger();
 
+        if(!hovers.isEmpty())
         hovers.forEach((k, v) -> {
             String[] s = message.split("%" + k + "%", 2);
             if(component.getExtra() == null) {
@@ -75,10 +84,10 @@ public class MessageBuilder {
                 }
             } else hover.setHoverEvent(v.component().getHoverEvent());
             component.addExtra(hover);
-            if(last(integer.incrementAndGet())) component.addExtra(ColorHelper.translateColors(s[1]));
+            if(last(integer.incrementAndGet()) && s.length == 2) component.addExtra(ColorHelper.translateColors(s[1]));
         });
 
-
+        if(!multiHovers.isEmpty())
         multiHovers.forEach((k, v) -> {
             TextComponent component1 = new TextComponent();
             String[] s = message.split("%" + k + "%", 2);
@@ -87,12 +96,12 @@ public class MessageBuilder {
             }
             v.accept(component1);
             component.addExtra(component1);
-            if(last(integer.incrementAndGet())) component.addExtra(ColorHelper.translateColors(s[1]));
+            if(last(integer.incrementAndGet()) && s.length == 2) component.addExtra(ColorHelper.translateColors(s[1]));
         });
 
         if(component.getText().isEmpty() && component.getExtra() == null) component.setText(ColorHelper.translateColors(message));
-        if(user == null) executor.sendMessage(component);
-        else user.sendMessage(component);
+        if(executor instanceof Player) ((Player)executor).spigot().sendMessage(component);
+        else executor.sendMessage(component.getExtra().stream().map(a -> a.toLegacyText()).collect(Collectors.joining(" ")));
     }
 
     private boolean last(int id){

@@ -15,7 +15,7 @@ import pl.saidora.core.model.impl.guild.Guild;
 public class GuildPanelCommand implements Command {
     @Override
     public void run(Executor executor) {
-        Main.getInstance().getUserCache().lookByName(executor.getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(executor.getName(), true).ifPresent(user -> {
             Guild guild = user.getGuild().orElse(null);
             if (guild == null) {
                 executor.sendMessage(Main.getInstance().getConfiguration().GUILD_HAVE);

@@ -1,5 +1,6 @@
 package pl.saidora.core.cache;
 
+import pl.saidora.core.factory.NewerOptional;
 import pl.saidora.core.model.Leaderboard;
 
 import java.util.HashMap;
@@ -14,8 +15,8 @@ public class LeaderboardCache {
         return cache;
     }
 
-    public <V> Optional<Leaderboard<V>> get(Class<V> clazz){
-        return  Optional.ofNullable(cache.get(clazz));
+    public <V> NewerOptional<Leaderboard<V>> get(Class<V> clazz){
+        return NewerOptional.ofNullable(cache.get(clazz));
     }
 
     public <V> void register(Class<V> clazz, Leaderboard<V> leaderboard){

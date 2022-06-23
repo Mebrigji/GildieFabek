@@ -9,10 +9,6 @@ import java.lang.reflect.Modifier;
 
 public class SystemHelper {
 
-    public static OperatingSystemMXBean getOperatingSystemMXBean(){
-        return ManagementFactory.getOperatingSystemMXBean();
-    }
-
     public static double getCpuUsage(){
         long usage = 0;
         ThreadMXBean tmxb = ManagementFactory.getThreadMXBean();

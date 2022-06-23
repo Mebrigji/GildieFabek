@@ -1,5 +1,6 @@
 package pl.saidora.core.events;
 
+import org.bukkit.event.inventory.ClickType;
 import pl.saidora.core.cache.EventCache;
 import pl.saidora.core.events.engine.CallbackEvent;
 import pl.saidora.core.model.impl.InventoryHolder;
@@ -14,10 +15,12 @@ public class UserInventoryClickEvent implements CallbackEvent<UserInventoryClick
     private boolean cancelled, blockClick;
 
     private final int slot;
+    private final ClickType clickType;
 
-    public UserInventoryClickEvent(InventoryHolder inventoryHolder, int slot){
+    public UserInventoryClickEvent(InventoryHolder inventoryHolder, int slot, ClickType clickType){
         this.inventoryHolder = inventoryHolder;
         this.slot = slot;
+        this.clickType = clickType;
     }
 
     @Override
@@ -52,5 +55,9 @@ public class UserInventoryClickEvent implements CallbackEvent<UserInventoryClick
 
     public int getSlot() {
         return slot;
+    }
+
+    public ClickType getClickType() {
+        return clickType;
     }
 }

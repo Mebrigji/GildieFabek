@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -22,7 +23,7 @@ import pl.saidora.core.events.*;
 import pl.saidora.core.events.guild.GuildRegionBlockBreakEvent;
 import pl.saidora.core.events.guild.GuildRegionBlockPlaceEvent;
 import pl.saidora.core.helpers.MaterialHelper;
-import pl.saidora.core.model.GuildPermission;
+import pl.saidora.core.model.impl.guild.GuildPermission;
 import pl.saidora.core.helpers.MessageHolder;
 import pl.saidora.core.model.impl.TimedMessage;
 import pl.saidora.core.model.impl.User;
@@ -73,7 +74,7 @@ public class EventAdapterListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent event){
-        Main.getInstance().getUserCache().lookByName(event.getPlayer().getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(event.getPlayer().getName(), true).ifPresent(user -> {
 
             UserChatEvent userChatEvent = new UserChatEvent(user, event, () -> Collections.singletonList(MessageHolder.create(user.getName() + ": " + event.getMessage())));
             userChatEvent.call();
@@ -93,14 +94,14 @@ public class EventAdapterListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClick(InventoryClickEvent event){
-        Main.getInstance().getUserCache().lookByName(event.getWhoClicked().getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(event.getWhoClicked().getName(), true).ifPresent(user -> {
             user.getInventoryHolder().ifPresent(inventoryHolder -> {
                 if(!event.getInventory().equals(inventoryHolder.getInventory())){
                     user.setInventoryHolder(null);
                     return;
                 }
 
-                UserInventoryClickEvent userInventoryClickEvent = new UserInventoryClickEvent(inventoryHolder, event.getSlot());
+                UserInventoryClickEvent userInventoryClickEvent = new UserInventoryClickEvent(inventoryHolder, event.getSlot(), event.getClick());
                 inventoryHolder.onClick(userInventoryClickEvent);
 
                 if(userInventoryClickEvent.isCancelled()) return;
@@ -112,7 +113,7 @@ public class EventAdapterListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCommand(PlayerCommandPreprocessEvent event){
-        Main.getInstance().getUserCache().lookByName(event.getPlayer().getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(event.getPlayer().getName(), true).ifPresent(user -> {
             UserCommandEvent commandEvent = new UserCommandEvent(user, event);
             commandEvent.call();
 
@@ -126,7 +127,7 @@ public class EventAdapterListener implements Listener {
 
         event.setCancelled(true);
 
-        Main.getInstance().getUserCache().lookByName(event.getPlayer().getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(event.getPlayer().getName(), true).ifPresent(user -> {
             AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
             Main.getInstance().getGuildCache().getGuildByLocation(event.getBlock().getLocation()).ifPresent(guild -> {
@@ -162,18 +163,18 @@ public class EventAdapterListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
-            Main.getInstance().getUserCache().lookByName(event.getEntity().getName(), true).ifPresent(user -> {
+            Main.getInstance().getUserCache().findByName(event.getEntity().getName(), true).ifPresent(user -> {
+
                 user.getAntyLogout().ifPresent(antyLogout -> {
                     if (event.getDamager() instanceof Arrow) {
                         Arrow arrow = (Arrow) event.getDamager();
                         if (arrow.getShooter() instanceof Player) {
-                            antyLogout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME * 1000);
+                            antyLogout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME);
                             user.getActionbar().ifPresent(actionbar -> actionbar.addMessage("combat", new TimedMessage((antyLogout.getEnd() - System.currentTimeMillis()) + 1000, u -> {
                                 double percent = (((antyLogout.getEnd() - System.currentTimeMillis()) / 1000.0) * 100.0) / Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME;
                                 if (percent <= 0) {
                                     return Main.getInstance().getConfiguration().EVENT_COMBAT_END;
-                                } else if (percent > 99.999)
-                                    user.sendMessage(Main.getInstance().getConfiguration().EVENT_COMBAT_START.replace("%attackerName%", (((LivingEntity) arrow.getShooter()).getName())));
+                                } else if (percent > 99.999) user.sendMessage(Main.getInstance().getConfiguration().EVENT_COMBAT_START.replace("%attackerName%", (((LivingEntity) arrow.getShooter()).getName())));
                                 return String.format(Main.getInstance().getConfiguration().ANTY_LOGOUT_MESSAGE,
                                         getColor(percent, 100),
                                         getColor(percent, 90),
@@ -186,18 +187,25 @@ public class EventAdapterListener implements Listener {
                                         getColor(percent, 20),
                                         getColor(percent, 10));
                             })));
-                            Main.getInstance().getUserCache().lookByName(((Player) arrow.getShooter()).getName(), true).ifPresent(attacker -> antyLogout.damage(user, event.getDamage()));
+                            Main.getInstance().getUserCache().findByName(((Player) arrow.getShooter()).getName(), true)
+                                    .ifPresent(attacker -> {
 
-                            new MessageBuilder(user, Main.getInstance().getConfiguration().EVENT_COMBAT_ARROW)
-                                    .with("victimName", user.getName())
-                                    .with("health", hearthFormat.format((((Player) event.getEntity()).getHealth() / 2)))
-                                    .send();
+                                        new MessageBuilder(attacker, Main.getInstance().getConfiguration().EVENT_COMBAT_ARROW)
+                                                .with("victimName", user.getName())
+                                                .with("health", hearthFormat.format((((Player) event.getEntity()).getHealth() / 2)))
+                                                .send();
+
+                                        antyLogout.damage(user, event.getDamage());
+                                    });
+                            UserDamageGivenEvent givenEvent = new UserDamageGivenEvent(user);
+                            givenEvent.setDamage(event.getDamage());
+                            givenEvent.call();
                         }
                     } else if (event.getDamager() instanceof Snowball) {
                         Snowball snowball = (Snowball) event.getDamager();
                         if (snowball.getShooter() instanceof Player) {
 
-                            antyLogout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME * 1000);
+                            antyLogout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME);
                             user.getActionbar().ifPresent(actionbar -> actionbar.addMessage("combat", new TimedMessage((antyLogout.getEnd() - System.currentTimeMillis()) + 1000, u -> {
                                 double percent = (((antyLogout.getEnd() - System.currentTimeMillis()) / 1000.0) * 100.0) / Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME;
 
@@ -217,25 +225,40 @@ public class EventAdapterListener implements Listener {
                                         getColor(percent, 20),
                                         getColor(percent, 10));
                             })));
-                            Main.getInstance().getUserCache().lookByName(((Player) snowball.getShooter()).getName(), true).ifPresent(attacker -> antyLogout.damage(user, event.getDamage()));
+                            Main.getInstance().getUserCache().findByName(((Player) snowball.getShooter()).getName(), true).ifPresent(attacker -> antyLogout.damage(user, event.getDamage()));
 
                             new MessageBuilder(user, Main.getInstance().getConfiguration().EVENT_COMBAT_SNOWBALL)
                                     .with("victimName", user.getName())
                                     .with("health", hearthFormat.format((((Player) event.getEntity()).getHealth() / 2)))
                                     .send();
+                            UserDamageGivenEvent givenEvent = new UserDamageGivenEvent(user);
+                            givenEvent.setDamage(event.getDamage());
+                            givenEvent.call();
                         }
                     } else if (event.getDamager() instanceof Player) {
                         Player player = (Player) event.getDamager();
-                        Main.getInstance().getUserCache().lookByName(player.getName(), true).ifPresent(attacker -> {
-
-                            UserCombatEvent combatEvent = new UserCombatEvent(user, attacker, event.getDamage());
-                            combatEvent.call();
-                            event.setDamage(combatEvent.getDamage());
+                        Main.getInstance().getUserCache().findByName(player.getName(), true).ifPresent(attacker -> {
 
                             attacker.getAntyLogout().ifPresent(logout -> logout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME));
                             if (antyLogout.getEnd() < System.currentTimeMillis())
                                 user.prepareMessage(Main.getInstance().getConfiguration().EVENT_COMBAT_START).with("attackerName", attacker.getName()).send();
+
                             antyLogout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME);
+                            attacker.getActionbar().ifPresent(actionbar -> actionbar.addMessage("combat", new TimedMessage((antyLogout.getEnd() - System.currentTimeMillis()) + 1000, u -> {
+                                double percent = (((antyLogout.getEnd() - System.currentTimeMillis()) / 1000.0) * 100.0) / Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME;
+                                if (percent <= 0) return Main.getInstance().getConfiguration().EVENT_COMBAT_END;
+                                return String.format(Main.getInstance().getConfiguration().ANTY_LOGOUT_MESSAGE,
+                                        getColor(percent, 100),
+                                        getColor(percent, 90),
+                                        getColor(percent, 80),
+                                        getColor(percent, 70),
+                                        getColor(percent, 60),
+                                        getColor(percent, 50),
+                                        getColor(percent, 40),
+                                        getColor(percent, 30),
+                                        getColor(percent, 20),
+                                        getColor(percent, 10));
+                            })));
                             attacker.getActionbar().ifPresent(actionbar -> actionbar.addMessage("combat", new TimedMessage((antyLogout.getEnd() - System.currentTimeMillis()) + 1000, u -> {
                                 double percent = (((antyLogout.getEnd() - System.currentTimeMillis()) / 1000.0) * 100.0) / Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME;
                                 if (percent <= 0) return Main.getInstance().getConfiguration().EVENT_COMBAT_END;
@@ -258,11 +281,11 @@ public class EventAdapterListener implements Listener {
         } else {
             Player player = getAttacker(event.getDamager());
             if(player == null) return;
-            Main.getInstance().getUserCache().lookByName(player.getName(), true).ifPresent(attacker -> {
+            Main.getInstance().getUserCache().findByName(player.getName(), true).ifPresent(attacker -> {
                 attacker.getAntyLogout().ifPresent(logout -> logout.setEnd(Main.getInstance().getConfiguration().ANTY_LOGOUT_TIME));
                 attacker.getScoreboard()
                         .ifPresent(scoreBoard -> scoreBoard.addTimedMessage("victim-hp",
-                                new TimedMessage(5000, u -> "&7HP ofiary: &c" + (((LivingEntity)event.getEntity()).getHealth() / 2.0))));
+                                new TimedMessage(5000, u -> "&7HP ofiary: &c" + hearthFormat.format(((LivingEntity)event.getEntity()).getHealth() / 2.0))));
             });
         }
     }
@@ -283,7 +306,7 @@ public class EventAdapterListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlace(BlockPlaceEvent event){
-        Main.getInstance().getUserCache().lookByName(event.getPlayer().getName(), true).ifPresent(user -> {
+        Main.getInstance().getUserCache().findByName(event.getPlayer().getName(), true).ifPresent(user -> {
             Main.getInstance().getGuildCache().getGuildByLocation(event.getBlock().getLocation()).ifPresent(guild -> {
                 GuildRegionBlockPlaceEvent blockPlaceEvent = new GuildRegionBlockPlaceEvent(guild, user, event.getBlock(), GuildPermission.BLOCK_PLACE::hasPermission);
                 blockPlaceEvent.setCancelled(event.isCancelled());
@@ -295,6 +318,38 @@ public class EventAdapterListener implements Listener {
             userBlockPlaceEvent.call();
             event.setCancelled(userBlockPlaceEvent.isCancelled());
             Main.getInstance().getGeneratorCache().placeGenerator(event.getBlock().getLocation(), user, event.getPlayer().getItemInHand());
+        });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onDeath(PlayerDeathEvent event){
+        event.setDeathMessage(null);
+        event.getEntity().setHealth(event.getEntity().getMaxHealth());
+        if(!event.getEntity().getKiller().getType().equals(EntityType.PLAYER)) return;
+        Main.getInstance().getUserCache().findByName(event.getEntity().getName(), true).ifPresent(user -> {
+
+            user.getAntyLogout().ifPresent(logout -> {
+
+            });
+            User killer = Main.getInstance().getOnlineUsers().get(event.getEntity().getKiller().getName());
+
+            int add = (int) (64.0 + (killer.getPoints() - user.getPoints()) * -0.25);
+            if (add <= 0) {
+                add = 0;
+            }
+            int remove = add / 4 * 3;
+
+            UserDeathEvent deathEvent = new UserDeathEvent(user, killer);
+            deathEvent.setAdd(add);
+            deathEvent.setRemove(remove);
+
+            deathEvent.call();
+
+            user.setPoints(user.getPoints() - deathEvent.getRemove());
+            killer.setPoints(killer.getPoints() + deathEvent.getAdd());
+
+            killer.sendTitle("&7Zabojstwo &d" + user.getName(), "&a+" + add + " pkt.", 8, 31, 24);
+            user.sendTitle("&7Umarles!", "&c-" + remove + " pkt.", 8, 31, 24);
         });
     }
 }
