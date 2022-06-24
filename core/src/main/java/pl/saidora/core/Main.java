@@ -22,6 +22,7 @@ import pl.saidora.core.commands.*;
 import pl.saidora.core.commands.guild.GuildCreateCommand;
 import pl.saidora.core.commands.guild.GuildInfoCommand;
 import pl.saidora.core.commands.guild.GuildPanelCommand;
+import pl.saidora.core.listeners.VanishCheckerListener;
 import pl.saidora.core.model.ChatMessage;
 import pl.saidora.core.helpers.MessageHolder;
 import pl.saidora.core.cache.*;
@@ -229,6 +230,7 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
             eventFactory.registerDefaultEvents();
 
             Bukkit.getPluginManager().registerEvents(new EventAdapterListener(), this);
+            Bukkit.getPluginManager().registerEvents(new VanishCheckerListener(), this);
 
             final Class<?> MinecraftServerClass = ReflectionHelper.getClass(ReflectionHelper.PATH_FINDER.MINECRAFT, "MinecraftServer");
             final Optional<Method> MGServer = ReflectionHelper.getMethod(MinecraftServerClass, "getServer");

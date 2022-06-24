@@ -442,6 +442,20 @@ public class Configuration extends OkaeriConfig {
     public String COMMAND_ENCHANT_REMOVE = "&7Pomyslnie usunieto enchant &d%enchantName%";
     public String COMMAND_ENCHANT_UPDATE = "&7Enchant &d%enchantName% &7zostal nadpisany. Nowy poziom enchantu: &d%level%";
 
+    @Comment({"###", "(10.11) Vanish Command", "###"})
+    public static String COMMAND_VANISH_OFFLINE = "&7Uzytkownik o tym nicku nie zostal odnaleziony";
+
+    public String COMMAND_VANISH_ENABLE = "&7Vanish zostal &awlaczony.";
+    public String COMMAND_VANISH_DISABLE = "&7Vanish zostal &cwylaczony.";
+    public String COMMAND_VANISH_CHECK_ENABLED = "&7Vanish jest &awlaczony.";
+    public String COMMAND_VANiSH_CHECK_DISABLED = "&7Vanish jest &cwylaczony.";
+
+    public String COMMAND_VANISH_ENABLE_EXECUTOR = "&aWlaczono niewidzialnosc uzytkownikowi &d%playerName%.";
+    public String COMMAND_VANISH_DISABLE_EXECUTOR = "&cWylaczono niewidzialnosc uzytkownikowi &d%playerName%.";
+
+    public String COMMAND_VANISH_CHECK_ENABLED_EXECUTOR = "&7Administrator &d%adminName% &7ma &awlaczona &7niewidzialnosc.";
+    public String COMMAND_VANISH_CHECK_DISABLED_EXECUTOR = "&7Administrator &d%adminName% &7ma &cwylaczona &7niewidzialnosc.";
+
     @Comment({"###", "(13) Zestawy", "###"})
     public List<String> KIT_GUI_ITEM_KIT_LORE = Arrays.asList(" &8--- ", "&8>> &7Posiadasz dostep: &d%have-access%", "&8>> &7Mozesz odebrac: &d%can-claim%", " ", "&7Jesli chcesz zobaczyc co", "&7posiada zestaw &f&nkliknij&r", "&dPRAWY PRZYCISK MYSZY", " &7Odbior zestawu: &dLEWY PRZYCISK MYSZY");
 

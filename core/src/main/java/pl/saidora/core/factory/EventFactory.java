@@ -72,14 +72,26 @@ public class EventFactory {
                     MessageHolder.create("&8: &7" + event.getBukkitChatEvent().getMessage())));
 
         });
+        EventCache.USER_BLOCK_PLACE_EVENT.add(event -> {
+            User user = event.getUser();
+            if(user.isVanish() && !user.isV_build()){
+                event.setCancelled(true);
+                user.getActionbar().ifPresent(actionbar -> actionbar.addMessage("vanish", new TimedMessage(3000, u -> "&a[VANISH] &cZablokowano budowanie")));
+            }
+        });
         EventCache.USER_BLOCK_BREAK_EVENT.add(event -> {
             User user = event.getUser();
+            if(user.isVanish() && !user.isV_build()) {
+                event.setCancelled(true);
+                user.getActionbar().ifPresent(actionbar -> actionbar.addMessage("vanish", new TimedMessage(3000, u -> "&a[VANISH] &cZablokowano niszczenie")));
+                return;
+            }
 
             if(user.addExp() >= user.getRequiredExp()){
                 user.setLevel(user.getLevel() + 1);
                 user.setExp(0);
                 user.setRequiredExp((long) (user.getRequiredExp() + (user.getRequiredExp() * 0.3) + 100));
-                user.sendTitle("&8:: &d&lAwans! &8::", "&7Osiągnięto wymagany poziom doświadczenia", 10, 23, 5);
+                user.sendTitle("&8:: &d&lAwans! &8::", "&7Osiagnieto wymagany poziom doswiadczenia", 10, 23, 5);
             }
 
             Generator generator = Main.getInstance().getGeneratorCache().getGeneratorMap().get(event.getBlock().getLocation());
@@ -88,6 +100,12 @@ public class EventFactory {
             if(player != null && player.getItemInHand().getType().equals(Material.GOLD_PICKAXE))
                 Main.getInstance().getGeneratorCache().breakGenerator(generator, event);
             else generator.regen();
+        });
+        EventCache.USER_DAMAGE_GIVEN_EVENT.add(event -> {
+            User user = event.getUser();
+            if(user.isVanish() && !user.isV_attack()){
+                event.setDamage(0);
+            }
         });
     }
 

@@ -67,7 +67,7 @@ public class User implements Rank, Sender, Options {
     private Actionbar actionbar;
     private InventoryHolder inventoryHolder;
     private AntiLogout antiLogout;
-    private boolean online, incognito, vanish;
+    private boolean online,  incognito, vanish, v_interact, v_build, v_attack, v_drop, v_pickup;
 
     private long teleportDelay, turboDrop, turboExp, chatDelay, join, quit, timeSpend;
 
@@ -120,6 +120,46 @@ public class User implements Rank, Sender, Options {
         inventory.addItem(kit.getItemStackList().toArray(new ItemStack[]{}));
 
         return inventory;
+    }
+
+    public boolean isV_interact() {
+        return v_interact;
+    }
+
+    public void setV_interact(boolean v_interact) {
+        this.v_interact = v_interact;
+    }
+
+    public boolean isV_build() {
+        return v_build;
+    }
+
+    public void setV_build(boolean v_build) {
+        this.v_build = v_build;
+    }
+
+    public boolean isV_attack() {
+        return v_attack;
+    }
+
+    public void setV_attack(boolean v_attack) {
+        this.v_attack = v_attack;
+    }
+
+    public boolean isV_drop() {
+        return v_drop;
+    }
+
+    public void setV_drop(boolean v_drop) {
+        this.v_drop = v_drop;
+    }
+
+    public boolean isV_pickup() {
+        return v_pickup;
+    }
+
+    public void setV_pickup(boolean v_pickup) {
+        this.v_pickup = v_pickup;
     }
 
     public Inventory preview(Kit kit){
