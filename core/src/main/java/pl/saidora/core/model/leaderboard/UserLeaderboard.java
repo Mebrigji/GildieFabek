@@ -1,8 +1,10 @@
-package pl.saidora.core.model.impl;
+package pl.saidora.core.model.leaderboard;
 
 import pl.saidora.core.model.Leaderboard;
+import pl.saidora.core.model.impl.User;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -12,7 +14,7 @@ public class UserLeaderboard implements Leaderboard<User> {
 
     @Override
     public String getLeaderboardName() {
-        return "user tops";
+        return "userPoints";
     }
 
     @Override
@@ -21,13 +23,18 @@ public class UserLeaderboard implements Leaderboard<User> {
     }
 
     @Override
+    public Class<User> getType() {
+        return User.class;
+    }
+
+    @Override
     public void sort() {
         users.sort(Comparator.comparingInt(User::getPoints));
+        Collections.reverse(users);
     }
 
     @Override
     public void addIfAbsent(User user) {
-        if(users.contains(user)) return;
-        users.add(user);
+        if(!users.contains(user)) users.add(user);
     }
 }

@@ -18,7 +18,8 @@ public class MaterialHelper {
         return material.getMaxDurability() > 10;
     }
 
-    public static void recalculateDurability(Player player) {
+    public static void updateDurability(Player player) {
+        
         ItemStack item = player.getItemInHand();
         if (item.getType().getMaxDurability() != 0) {
             int enchantLevel = item.getEnchantmentLevel(Enchantment.DURABILITY);

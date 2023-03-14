@@ -3,7 +3,6 @@ package pl.saidora.core.commands;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import pl.saidora.api.helpers.ColorHelper;
 import pl.saidora.core.Main;

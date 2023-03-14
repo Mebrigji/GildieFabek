@@ -80,7 +80,7 @@ public class Guild implements Rank, Region, GuildHearth {
     }
 
     public int getPosition() {
-        return Main.getInstance().getLeaderboardCache().get(Guild.class).get().getPosition(this)+1;
+        return Main.getInstance().getLeaderboardCache().get("guildPoints", Guild.class).get().getPosition(this)+1;
     }
 
     public String getTag() {

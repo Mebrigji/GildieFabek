@@ -8,13 +8,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import pl.saidora.core.builder.MessageBuilder;
-import pl.saidora.core.commands.system.Executor;
-import pl.saidora.core.model.impl.Abyss;
+import pl.saidora.core.model.impl.*;
 import pl.saidora.core.model.Options;
 import pl.saidora.core.model.PersistentDataService;
-import pl.saidora.core.model.impl.Actionbar;
-import pl.saidora.core.model.impl.ScoreBoard;
-import pl.saidora.core.model.impl.TabList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,28 +21,38 @@ public class TaskFactory {
 
     public BukkitTask registerUserScheduler(PersistentDataService service) {
         return Bukkit.getScheduler().runTaskTimerAsynchronously(service.getPlugin(), () -> service.getOnlineUsers().forEach((name, user) -> {
+            if(user.isVanish()){
+                user.getActionbar().ifPresent(actionbar -> {
+                    actionbar.addMessage("vanish-enabled", new TimedMessage(1500, u -> "&2[VANISH] &aPrzypominajka"));
+                    actionbar.send();
+                });
+            }
             user.getTabList().ifPresent(TabList::update);
             user.getScoreboard().ifPresent(ScoreBoard::send);
-            user.getActionbar().ifPresent(Actionbar::send);
         }), 0, 5);
     }
 
     public BukkitTask registerSortScheduler(PersistentDataService service) {
-        return Bukkit.getScheduler().runTaskTimerAsynchronously(service.getPlugin(), () -> service.getLeaderboardCache().getCache().forEach(((aClass, leaderboard) ->
+        return Bukkit.getScheduler().runTaskTimer(service.getPlugin(), () -> service.getLeaderboardCache().getCache().forEach(((aClass, leaderboard) ->
                 leaderboard.sort()
         )), 0, 200);
     }
 
     public BukkitTask registerGeneratorScheduler(PersistentDataService service) {
-        return Bukkit.getScheduler().runTaskTimer(service.getPlugin(), () ->
-                new HashMap<>(service.getGeneratorsToRegen()).forEach(((location, generator) -> {
-                    generator.setCountdown(generator.getCountdown() - 1);
-                    if (generator.getCountdown() <= 0) {
-                        service.getGeneratorsToRegen().remove(location);
-                        generator.setCountdown(generator.getDelay());
-                        location.getBlock().setType(generator.getGenerate());
-                    }
-                })), 0, 1);
+        return Bukkit.getScheduler().runTaskTimer(service.getPlugin(), () -> {
+            new HashMap<>(service.getGeneratorsToRegen()).forEach(((location, generator) -> {
+                generator.setCountdown(generator.getCountdown() - 1);
+                if (generator.getCountdown() <= 0) {
+                    service.getGeneratorsToRegen().remove(location);
+                    generator.setCountdown(generator.getDelay());
+                    location.getBlock().setType(generator.getGenerate());
+                }
+            }));
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                onlinePlayer.setNoDamageTicks(0);
+                onlinePlayer.setMaximumNoDamageTicks(0);
+            }
+        }, 0, 1);
     }
 
     public BukkitTask registerAbyssScheduler(PersistentDataService service) {

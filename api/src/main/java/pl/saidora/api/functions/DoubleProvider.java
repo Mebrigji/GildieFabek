@@ -1,6 +1,6 @@
 package pl.saidora.api.functions;
 
-public interface Getter<T, V> {
+public interface DoubleProvider<T, V> {
 
     T getT();
 

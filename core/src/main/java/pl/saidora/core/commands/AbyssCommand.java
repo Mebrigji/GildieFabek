@@ -20,7 +20,6 @@ public class AbyssCommand implements Command {
 
     @Override
     public void run(Executor executor) {
-        String[] args = executor.getCommandArguments();
         Main.getInstance().getUserCache().findByName(executor.getName(), true).ifPresent(user -> {
             AbyssCache cache = Main.getInstance().getAbyssCache();
             if(!cache.isOpened()){

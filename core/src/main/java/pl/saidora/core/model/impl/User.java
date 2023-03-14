@@ -85,6 +85,7 @@ public class User implements Rank, Sender, Options {
     private User lastReceiver;
     private final List<User> blocked = new ArrayList<>();
     private final List<User.ToggleType> toggleTypes = new ArrayList<>();
+    private long paidExperience;
 
     public User(String name){
         this.name = name;
@@ -267,7 +268,7 @@ public class User implements Rank, Sender, Options {
 
     @Override
     public int getPosition() {
-        return Main.getInstance().getLeaderboardCache().get(User.class).get().getPosition(this)+1;
+        return Main.getInstance().getLeaderboardCache().get("userPoints", User.class).get().getPosition(this);
     }
 
     @Override
@@ -844,6 +845,14 @@ public class User implements Rank, Sender, Options {
                 p.showPlayer(player);
             }
         });
+    }
+
+    public long getPaidExperience() {
+        return paidExperience;
+    }
+
+    public void setPaidExperience(long paidExperience) {
+        this.paidExperience = paidExperience;
     }
 
     public enum ToggleType {

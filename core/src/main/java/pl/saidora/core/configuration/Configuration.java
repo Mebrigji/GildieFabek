@@ -42,7 +42,7 @@ public class Configuration extends OkaeriConfig {
     public double GUILD_MEMBERS_LEVEL_2_COST = 250;
     public double GUILD_MEMBERS_LEVEL_3_COST = 500;
 
-    public int GENERATORS_PER_USER_FOR_PLAYER = 25, GENERATORS_PER_USER_FOR_VIP = 50;
+    public int GENERATORS_PER_USER_FOR_PLAYER = 100, GENERATORS_PER_USER_FOR_VIP = 200;
 
     public double GENERATOR_STONE_HEALTH = 40, GENERATOR_OBSIDIAN_HEALTH = 100;
 
@@ -112,14 +112,14 @@ public class Configuration extends OkaeriConfig {
     public int TABLIST_PING = -1;
 
     public List<String> TABLIST_HEADER = Arrays.asList(" ",
-            "&8&m---&d&m---&8&m---&5&m---[-&r &d&lWonder&f&lMC.PL &5&m-]---&8&m---&d&m---&8&m---",
+            "&8&m---&d&m---&8&m---&5&m---[-&r &c&lHOTMC.PL &5&m-]---&8&m---&d&m---&8&m---",
             "&aGraczy online aktualnie &8(&a%playersOnline%&7/&2%playersMax%&8)",
             " ");
     public List<String> TABLIST_FOOTER = Arrays.asList(" ",
-            "Ukrywaj skina,nick,range pod komenda&8(&d/incognito&8)",
-            "&fMozesz edytowac ustawienia chatu&8(&d/cc&8)",
-            "&5\u30fb&7Strona&8: &dhttps://www.wondermc.pl &5\u30fb",
-            "&5\u30fb&7Discord&8: &fdc.wondermc.pl &5\u30fb",
+            "Ukrywaj skina, nick, range pod komenda&8(&a/incognito&8)",
+            "&fMozesz edytowac ustawienia chatu&8(&a/cc&8)",
+            "&8\u30fb&7Strona&8: &chttps://www.hotmc.pl &8\u30fb",
+            "&8\u30fb&7Discord&8: &fdc.hotmc.pl &8\u30fb",
             " ");
 
     public List<String> TABLIST_ROWS = Arrays.asList(" ",
@@ -329,7 +329,7 @@ public class Configuration extends OkaeriConfig {
     public String ABYSS_GUI_PREVIOUS_EMPTY_HEAD = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmIwZjZlOGFmNDZhYzZmYWY4ODkxNDE5MWFiNjZmMjYxZDY3MjZhNzk5OWM2MzdjZjJlNDE1OWZlMWZjNDc3In19fQ==";
 
     public long ABYSS_COUNTDOWN = 180;
-    public long ABYSS_OPEN_TIME = 30;
+    public long ABYSS_OPEN_TIME = 60;
 
     public List<String> ABYSS_MESSAGES = Arrays.asList(
             "<180> &5[OTCHLAN] &7Otchlan zostanie otwarta za: &d3 minuty.",

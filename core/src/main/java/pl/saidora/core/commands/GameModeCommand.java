@@ -23,7 +23,7 @@ public class GameModeCommand implements Command {
 
         GameMode gameMode = getMode(args[0]);
         if(gameMode == null){
-            executor.prepareMessage(Main.getInstance().getConfiguration().COMMAND_GAMEMODE_INVALID_MODE).with("%mode%", args[0]).send();
+            executor.prepareMessage(Main.getInstance().getConfiguration().COMMAND_GAMEMODE_INVALID_MODE).with("mode", args[0]).send();
             return;
         }
 

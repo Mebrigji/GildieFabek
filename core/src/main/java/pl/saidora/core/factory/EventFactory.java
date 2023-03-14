@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import pl.saidora.api.helpers.SystemHelper;
 import pl.saidora.core.helpers.MessageHolder;
 import pl.saidora.core.Main;
 import pl.saidora.core.cache.EventCache;
@@ -20,7 +21,9 @@ public class EventFactory {
     public void registerDefaultEvents(){
         EventCache.USER_JOIN_EVENT.add(event -> {
             User user = event.getUser();
+
             user.setJoin(System.currentTimeMillis());
+
             Bukkit.getScheduler().runTaskLaterAsynchronously(Main.getInstance(), () -> {
                 if (user.getRequiredExp() == 0) user.setRequiredExp(50);
 
@@ -29,16 +32,17 @@ public class EventFactory {
                 user.setUUID(event.getBukkitJoinEvent().getPlayer().getUniqueId());
                 user.setAbsent(AntiLogout::new, Actionbar::new, ScoreBoard::new, TabList::new, Teleport::new, PacketHelper::new);
 
-                //user.getActionbar().ifPresent(actionbar -> actionbar.addMessage("dev-info", new Actionbar.TimedMessage(-1, u -> "&7Cpu: &d" + SystemHelper.getCpuUsage() + "% &8| &7Ram: &d(usage=" + SystemHelper.getUsageRam() + "/total=" + SystemHelper.getTotalRam() + "/free=" + SystemHelper.getFreeRam() + "/max=" + SystemHelper.getMaxRam() + ")")));
-
                 Main.getInstance().tabFactory.setTab(user);
                 Main.getInstance().scoreboardFactory.setScoreboard(user);
 
                 user.giveItem(Main.getInstance().getConfiguration().GENERATOR_ITEM);
 
-                Main.getInstance().getLeaderboardCache().get(User.class).ifPresent(userLeaderboard -> userLeaderboard.addIfAbsent(user));
+                Main.getInstance().getLeaderboardCache().getCache().values().stream().filter(leaderboard -> leaderboard.getType().equals(User.class)).forEach(leaderboard -> {
+                    leaderboard.addIfAbsent(user);
+                });
             }, 10);
         });
+
         EventCache.USER_QUIT_EVENT.add(event -> {
             event.getUser().setPlayer(null);
             event.getUser().setOnline(false);
@@ -48,6 +52,7 @@ public class EventFactory {
             event.getUser().setLastReceiver(null);
             event.getUser().setVanish(false);
         });
+
         EventCache.USER_CHAT_EVENT.add(event -> {
             User user = event.getUser();
             if(user.getChatDelay() > System.currentTimeMillis()){
@@ -62,8 +67,6 @@ public class EventFactory {
                 user.setChatDelay(System.currentTimeMillis() + 5000);
                 user.getScoreboard().ifPresent(scoreBoard -> scoreBoard.addTimedMessage("delay-chat", new TimedMessage(5000, u -> "&7Blokada chatu: &d" + (user.getChatDelay() - System.currentTimeMillis()) + "ms. &7do konca")));
             }
-
-            //ChatProvider provider = Main.getInstance().getChatCache().get(user.getGroupName()).clone();
 
             Guild guild = user.getGuild().orElse(null);
 
@@ -101,10 +104,16 @@ public class EventFactory {
                 Main.getInstance().getGeneratorCache().breakGenerator(generator, event);
             else generator.regen();
         });
-        EventCache.USER_DAMAGE_GIVEN_EVENT.add(event -> {
-            User user = event.getUser();
-            if(user.isVanish() && !user.isV_attack()){
-                event.setDamage(0);
+        EventCache.USER_DAMAGE_EVENT.add(event -> {
+            User victim = event.getVictim();
+
+            if(event.getProvider() == null) return;
+            User attacker = event.getProvider().getT();
+            if(attacker != null){
+                if(attacker.isVanish() && !attacker.isV_attack()){
+                    event.setCancelled(true);
+                }
+                attacker.setPoints(attacker.getPoints() + 1);
             }
         });
     }
@@ -137,7 +146,6 @@ public class EventFactory {
             target.prepareMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_REQUEST_TARGET).with("playerName", user.getName()).with("time", time).send();
 
         });
-
         EventCache.USER_ACCEPT_TELEPORT_REQUEST.add(event -> {
             User user = event.getUser();
             user.asPlayer().ifPresent(player -> {
@@ -164,9 +172,8 @@ public class EventFactory {
                 user.send();
             });
         });
-
-        EventCache.USER_DAMAGE_GIVEN_EVENT.add(event -> {
-            User user = event.getUser();
+        EventCache.USER_DAMAGE_EVENT.add(event -> {
+            User user = event.getVictim();
             user.getTeleport().ifPresent(teleport -> {
                 if(teleport.isRunning()) {
                     user.addMessage(Main.getInstance().getConfiguration().MESSAGE_TELEPORT_SCHEDULER_OBSTACLE);

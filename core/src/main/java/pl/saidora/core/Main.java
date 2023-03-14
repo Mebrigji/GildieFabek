@@ -36,9 +36,10 @@ import pl.saidora.core.model.PersistentDataService;
 import pl.saidora.core.factory.EventFactory;
 import pl.saidora.core.factory.TaskFactory;
 import pl.saidora.core.listeners.EventAdapterListener;
-import pl.saidora.core.model.impl.GuildLeaderboard;
+import pl.saidora.core.model.leaderboard.GuildLeaderboard;
 import pl.saidora.core.model.impl.User;
-import pl.saidora.core.model.impl.UserLeaderboard;
+import pl.saidora.core.model.leaderboard.MinerLeaderboard;
+import pl.saidora.core.model.leaderboard.UserLeaderboard;
 import pl.saidora.core.model.impl.guild.Guild;
 
 import java.lang.reflect.Field;
@@ -236,8 +237,9 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
             final Optional<Method> MGServer = ReflectionHelper.getMethod(MinecraftServerClass, "getServer");
             final Optional<Field> recentTps = ReflectionHelper.getField(MinecraftServerClass, "recentTps");
 
-            leaderboardCache.register(User.class, new UserLeaderboard());
-            leaderboardCache.register(Guild.class, new GuildLeaderboard());
+            leaderboardCache.register(new UserLeaderboard());
+            leaderboardCache.register(new GuildLeaderboard());
+            leaderboardCache.register(new MinerLeaderboard());
 
             DecimalFormat format = new DecimalFormat("##.##");
 
@@ -276,7 +278,7 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
             tabFactory.addGuildReplacement("g-kdr", guild -> guild == null ? "0" : String.valueOf(guild.getKDR()));
             tabFactory.addGuildReplacement("g-position", guild -> guild == null ? "Brak" : String.valueOf(guild.getPosition()));
 
-            leaderboardCache.get(User.class).ifPresent(userLeaderboard -> {
+            leaderboardCache.get("userPoints", User.class).ifPresent(userLeaderboard -> {
                 for (int i = 0; i < 40; i++) {
                     int finalI = i;
                     tabFactory.addReplacement("top_" + (i + 1) + "-points", u -> {
@@ -285,20 +287,20 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
                     });
                     int finalI1 = i;
                     tabFactory.addReplacement("top_" + (i + 1) + "-g-tag", u -> {
-                        User user = userLeaderboard.getByPosition(finalI1);
+                        User user = (User) userLeaderboard.getByPosition(finalI1);
                         if(user == null) return "";
                         Guild guild = user.getGuild().orElse(null);
                         return u.getGuildPrefix(guild);
                     });
                     int finalI2 = i;
                     tabFactory.addReplacement("top_" + (i + 1) + "-name", u -> {
-                        User user = userLeaderboard.getByPosition(finalI2);
+                        User user = (User) userLeaderboard.getByPosition(finalI2);
                         return user == null ? "Brak" : user.getName();
                     });
                 }
             });
 
-            leaderboardCache.get(Guild.class).ifPresent(userLeaderboard -> {
+            leaderboardCache.get("guildPoints", Guild.class).ifPresent(userLeaderboard -> {
                 for (int i = 0; i < 40; i++) {
                     int finalI = i;
                     tabFactory.addReplacement("g_top_" + (i + 1) + "-points", g -> {
@@ -358,12 +360,6 @@ public class Main extends JavaPlugin implements PersistentDataService, Listener 
         //} else {
         //    Bukkit.getPluginManager().registerEvents(this, this);
         //}
-    }
-
-    private void registerCommand(pl.saidora.core.commands.system.Command... commands){
-        for (pl.saidora.core.commands.system.Command command : commands) {
-            accessibler.addCommand(command.commandInfo().name(), pl.saidora.core.commands.system.Command.toBukkitCommand(command), getServer());
-        }
     }
 
     @Override

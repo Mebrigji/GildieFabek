@@ -1,6 +1,5 @@
 package pl.saidora.core.cache;
 
-import eu.okaeri.configs.serdes.SerializationData;
 import pl.saidora.core.events.*;
 import pl.saidora.core.events.guild.*;
 
@@ -12,7 +11,8 @@ public class EventCache {
 
     public static Set<Consumer<ScoreboardUpdateEvent>> SCOREBOARD_UPDATE_EVENT = new HashSet<>();
 
-    public static Set<Consumer<UserDamageGivenEvent>> USER_DAMAGE_GIVEN_EVENT = new HashSet<>();
+    public static Set<Consumer<UserDamageEvent>> USER_DAMAGE_EVENT = new HashSet<>();
+
     public static Set<Consumer<UserJoinEvent>> USER_JOIN_EVENT = new HashSet<>();
     public static Set<Consumer<UserQuitEvent>> USER_QUIT_EVENT = new HashSet<>();
     public static Set<Consumer<UserInventoryClickEvent>> USER_INVENTORY_CLICK_EVENT = new HashSet<>();

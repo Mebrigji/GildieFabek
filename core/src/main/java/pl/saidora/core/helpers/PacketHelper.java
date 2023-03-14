@@ -1,5 +1,6 @@
 package pl.saidora.core.helpers;
 
+import com.mojang.authlib.GameProfile;
 import org.bukkit.entity.Player;
 import pl.saidora.api.functions.LambdaBypass;
 import pl.saidora.api.helpers.ReflectionHelper;
@@ -10,7 +11,6 @@ import pl.saidora.core.model.impl.User;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +23,7 @@ public class PacketHelper implements PlayerPacket {
 
     private static final Optional<Field> PlayerConnection_Field = ReflectionHelper.getField(EntityPlayerClass, "playerConnection");
 
+    private static final Optional<Method> MGAMEPROFILE = ReflectionHelper.getMethod(CraftPlayerClass, "getProfile");
     private static final Optional<Method> MGHANDLE = ReflectionHelper.getMethod(CraftPlayerClass, "getHandle");
     private static final Optional<Method> MSPACKET = ReflectionHelper.getMethod(PlayerConnectionClass, "sendPacket", PacketClass);
 
@@ -61,6 +62,11 @@ public class PacketHelper implements PlayerPacket {
     @Override
     public void addPacket(PacketReader packetReader) {
         this.packetReaders.add(packetReader);
+    }
+
+    @Override
+    public GameProfile getGameProfile() {
+        return (GameProfile) ReflectionHelper.invoke(MGAMEPROFILE.get(), CraftPlayerClass.cast(getPlayer()));
     }
 
     @Override

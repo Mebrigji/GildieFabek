@@ -1,5 +1,6 @@
 package pl.saidora.core.commands.guild;
 
+import org.bukkit.entity.Player;
 import pl.saidora.api.helpers.TimeHelper;
 import pl.saidora.core.Main;
 import pl.saidora.core.builder.MessageBuilder;
@@ -51,7 +52,7 @@ public class GuildCreateCommand implements Command {
                         .with("expire", new TimeHelper(guild.getExpireGuild()).secondsToString())
                         .with("guilds", Main.getInstance().getGuildCache().getCache().size()).send();
 
-                MessageBuilder builder = new MessageBuilder((Executor) null, Main.getInstance().getConfiguration().GUILD_CREATE_ALL);
+                MessageBuilder builder = new MessageBuilder((Player) null, Main.getInstance().getConfiguration().GUILD_CREATE_ALL);
 
                 builder.with("playerName", user.getName());
                 builder.with("tag", guild.getTag());

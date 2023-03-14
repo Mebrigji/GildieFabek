@@ -11,10 +11,13 @@ import pl.saidora.core.commands.system.CommandInfo;
 import pl.saidora.core.commands.system.Executor;
 import pl.saidora.core.commands.system.ExecutorType;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CommandInfo(name = "enchant", usage = "/enchant [enchant] [level]", permission = "sacore.enchant", executors = ExecutorType.PLAYER)
 public class EnchantCommand implements Command {
+
     @Override
     public void run(Executor executor) {
         String[] args = executor.getCommandArguments();
@@ -27,7 +30,7 @@ public class EnchantCommand implements Command {
                 return;
             }
 
-            Enchantment enchantment = getEnchantment(args[1]);
+            Enchantment enchantment = getEnchantment(args[0]);
             if(enchantment == null){
                 executor.sendMessage(Main.getInstance().getConfiguration().COMMAND_ENCHANT_INVALID);
                 return;
@@ -55,7 +58,7 @@ public class EnchantCommand implements Command {
     @Override
     public List<String> tabComplete(Executor executor) {
         String[] args = executor.getCommandArguments();
-        if(args.length == 1) StringHelper.startWith(Enchantment.values(), args[0], true, -1);
+        if(args.length == 1) return StringHelper.startWith(Arrays.stream(Enchantment.values()).map(Enchantment::getName).collect(Collectors.toList()), args[0], false, -1);
         return Command.super.tabComplete(executor);
     }
 

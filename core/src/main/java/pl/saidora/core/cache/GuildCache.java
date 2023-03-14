@@ -65,7 +65,7 @@ public class GuildCache {
 
         cache.put(guild.getTag(), guild);
         guild.getLeader().setGuild(guild);
-        Main.getInstance().getLeaderboardCache().get(Guild.class).ifPresent(guildLeaderboard -> guildLeaderboard.addIfAbsent(guild));
+        Main.getInstance().getLeaderboardCache().get("guildPoints", Guild.class).ifPresent(guildLeaderboard -> guildLeaderboard.addIfAbsent(guild));
         return guild;
     }
 }

@@ -8,6 +8,8 @@ public interface Leaderboard<V> {
 
     List<V> getValues();
 
+    Class<V> getType();
+
     void sort();
 
     void addIfAbsent(V v);
@@ -17,11 +19,12 @@ public interface Leaderboard<V> {
     }
 
     default int getPosition(V v){
-        for (int i = 0; i < getValues().size(); i++) {
-            if(getValues().get(i).equals(v))
-                return i;
+        int pos = 0;
+        for (V value : getValues()) {
+            if(value.equals(v)) return ++pos;
+            else ++pos;
         }
-        return 0;
+        return ++pos;
     }
 
 }

@@ -41,7 +41,7 @@ public class Abyss {
         return inventory;
     }
 
-    public void addItem(ItemStack[] itemStack){
+    public synchronized void addItem(ItemStack[] itemStack){
         Collection<ItemStack> itemStackList = inventory.addItem(itemStack).values();
         if(!itemStackList.isEmpty())
             Main.getInstance()

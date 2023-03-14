@@ -138,28 +138,62 @@ public class VanishCommand implements Command {
             if(event.getSlot() == 25){
                 user.setVanish(true);
                 user.updateVisibility();
-                openPanel(user);
+                update(cachedInventory);
             } else if(event.getSlot() == 19){
                 user.setVanish(false);
                 user.updateVisibility();
-                openPanel(user);
+                update(cachedInventory);
             } else if(event.getSlot() == 20){
                 user.setV_drop(!user.isV_drop());
-                openPanel(user);
+                update(cachedInventory);
             } else if(event.getSlot() == 21){
                 user.setV_pickup(!user.isV_pickup());
-                openPanel(user);
+                update(cachedInventory);
             } else if(event.getSlot() == 22){
                 user.setV_build(!user.isV_build());
-                openPanel(user);
+                update(cachedInventory);
             } else if(event.getSlot() == 23){
                 user.setV_interact(!user.isV_interact());
-                openPanel(user);
+                update(cachedInventory);
             } else if(event.getSlot() == 24){
                 user.setV_attack(!user.isV_attack());
-                openPanel(user);
+                update(cachedInventory);
             }
         });
         cachedInventory.open();
+    }
+
+    private void update(CachedInventory cachedInventory){
+        User user = cachedInventory.getUser();
+
+        cachedInventory.setItemInSlots(new int[]{12, 14}, new ItemHelper(Material.STAINED_GLASS_PANE, 1, (short) (user.isVanish() ? 5 : 14)).editMeta(itemMeta -> {
+            itemMeta.setDisplayName(" ");
+        }));
+
+        cachedInventory.setItem(13, new ItemHelper(Material.SIGN).editMeta(itemMeta -> {
+            if(user.isVanish()){
+                itemMeta.setDisplayName(ColorHelper.translateColors("&a[VANISH]"));
+                itemMeta.setLore(ColorHelper.translateColors(Arrays.asList("&7Niewidzialnosc jest uruchomiona", " ", "&7Kliknij, w &fpusta butelke&7 aby &cwylaczyc")));
+            } else {
+                itemMeta.setDisplayName(ColorHelper.translateColors("&c[VANISH]"));
+                itemMeta.setLore(ColorHelper.translateColors(Arrays.asList("&7Niewidzialnosc jest wylaczona", " ", "&7Kliknij, w &feliksir niewidzialnosci&7 aby &awlaczyc")));
+            }
+        }));
+
+        cachedInventory.setItem(29, new ItemHelper(Material.STAINED_GLASS, 1, (short) (user.isV_drop() ? 5 : 14)).editMeta(itemMeta -> {
+            itemMeta.setDisplayName(ColorHelper.translateColors(user.isV_drop() ? "&aFunkcja odblokowana" : "&cFunkcja zablokowana"));
+        }));
+        cachedInventory.setItem(30, new ItemHelper(Material.STAINED_GLASS, 1, (short) (user.isV_pickup() ? 5 : 14)).editMeta(itemMeta -> {
+            itemMeta.setDisplayName(ColorHelper.translateColors(user.isV_pickup() ? "&aFunkcja odblokowana" : "&cFunkcja zablokowana"));
+        }));
+        cachedInventory.setItem(31, new ItemHelper(Material.STAINED_GLASS, 1, (short) (user.isV_build() ? 5 : 14)).editMeta(itemMeta -> {
+            itemMeta.setDisplayName(ColorHelper.translateColors(user.isV_build() ? "&aFunkcja odblokowana" : "&cFunkcja zablokowana"));
+        }));
+        cachedInventory.setItem(32, new ItemHelper(Material.STAINED_GLASS, 1, (short) (user.isV_interact() ? 5 : 14)).editMeta(itemMeta -> {
+            itemMeta.setDisplayName(ColorHelper.translateColors(user.isV_interact() ? "&aFunkcja odblokowana" : "&cFunkcja zablokowana"));
+        }));
+        cachedInventory.setItem(33, new ItemHelper(Material.STAINED_GLASS, 1, (short) (user.isV_attack() ? 5 : 14)).editMeta(itemMeta -> {
+            itemMeta.setDisplayName(ColorHelper.translateColors(user.isV_attack() ? "&aFunkcja odblokowana" : "&cFunkcja zablokowana"));
+        }));
     }
 }

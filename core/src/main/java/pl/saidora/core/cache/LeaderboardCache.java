@@ -9,18 +9,23 @@ import java.util.Optional;
 
 public class LeaderboardCache {
 
-    private final Map<Class, Leaderboard> cache = new HashMap<>();
+    private final Map<String, Leaderboard> cache = new HashMap<>();
 
-    public Map<Class, Leaderboard> getCache() {
+    public Map<String, Leaderboard> getCache() {
         return cache;
     }
 
-    public <V> NewerOptional<Leaderboard<V>> get(Class<V> clazz){
-        return NewerOptional.ofNullable(cache.get(clazz));
+    public <V> NewerOptional<Leaderboard<V>> get(String id, Class<V> type){
+        return NewerOptional.fromOldOptional(cache.values().stream().filter(leaderboard -> leaderboard.getLeaderboardName().equals(id)).map(leaderboard -> (Leaderboard<V>)leaderboard).findFirst());
     }
 
-    public <V> void register(Class<V> clazz, Leaderboard<V> leaderboard){
-        cache.put(clazz, leaderboard);
+    public <V> void register(String id, Leaderboard<V> leaderboard){
+        cache.put(id, leaderboard);
     }
+
+    public <V> void register(Leaderboard<V> leaderboard){
+        cache.put(leaderboard.getLeaderboardName(), leaderboard);
+    }
+    
 
 }

@@ -3,6 +3,7 @@ package pl.saidora.core.model.impl;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import pl.saidora.api.functions.LambdaBypass;
 import pl.saidora.api.helpers.ColorHelper;
@@ -101,7 +102,8 @@ public class TabList {
                     profile = new GameProfile(UUID.fromString(String.format(UUID_PATTERN, StringUtils.leftPad(String.valueOf(i), 2, '0'))), "");
                     if(!signature.isEmpty() && !texture.isEmpty()){
                         profile.getProperties().removeAll("textures");
-                        profile.getProperties().put("textures", new Property("textures", texture, signature));
+                        GameProfile gameProfile = playerPacket.getGameProfile();
+                        profile.getProperties().get("textures").addAll(gameProfile.getProperties().get("textures"));
                     }
                     gameProfiles[i] = profile;
                 }
@@ -144,7 +146,8 @@ public class TabList {
                     profile = new GameProfile(UUID.fromString(String.format(UUID_PATTERN, StringUtils.leftPad(String.valueOf(i), 2, '0'))), "");
                     if(!signature.isEmpty() && !texture.isEmpty()){
                         profile.getProperties().removeAll("textures");
-                        profile.getProperties().put("textures", new Property("textures", texture, signature));
+                        GameProfile gameProfile = playerPacket.getGameProfile();
+                        profile.getProperties().get("textures").addAll(gameProfile.getProperties().get("textures"));
                     }
                     gameProfiles[i] = profile;
                 }
